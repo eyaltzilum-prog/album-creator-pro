@@ -1,0 +1,31 @@
+{
+  "summary": "Fix Frame-Photo Masking System",
+  "todos": [
+    {
+      "id": 1,
+      "description": "Rewrite FrameElementComponent with flat architecture",
+      "files": [
+        "src/pages/client/Editor.tsx"
+      ],
+      "status": "complete"
+    },
+    {
+      "id": 2,
+      "description": "Fix photo drop handlers for proper fill/center",
+      "files": [
+        "src/pages/client/Editor.tsx"
+      ],
+      "status": "complete"
+    },
+    {
+      "id": 3,
+      "description": "Test and validate the implementation",
+      "files": [
+        "src/pages/client/Editor.tsx"
+      ],
+      "status": "complete"
+    }
+  ],
+  "createdAt": "2026-03-30T17:10:33.774Z",
+  "updatedAt": "2026-03-30T17:12:16.088Z"
+}
