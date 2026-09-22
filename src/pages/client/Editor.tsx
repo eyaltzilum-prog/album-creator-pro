@@ -2338,24 +2338,16 @@ export default function ClientEditor() {
         {/* Main Canvas - Maximum Space */}
         <main data-ev-id="ev_a755909775" className="flex-1 flex flex-col overflow-hidden min-w-0">
           <div data-ev-id="ev_0c8caac4e0" ref={canvasContainerRef} onDragOver={handleCanvasDragOver} onDragLeave={() => {setIsOverDropZone(false);setHoverFrameId(null);}} onDrop={handleCanvasDrop} className={`flex-1 overflow-hidden bg-[#e8eaed] flex items-center justify-center relative ${isOverDropZone ? 'ring-2 ring-[#2daea8] ring-inset' : ''}`}>
-            {/* Zoom Controls - Floating */}
-            <div data-ev-id="ev_zoom_controls" className="absolute bottom-4 left-4 z-20 flex items-center gap-1 bg-white/95 backdrop-blur shadow-md border border-gray-200 rounded-lg px-2 py-1.5">
-              <button data-ev-id="ev_ecb3eefecd" onClick={() => handleManualZoom(Math.max(0.2, zoom - 0.1))} className="p-1 text-gray-500 hover:text-[#2daea8] hover:bg-gray-100 rounded"><ZoomOut className="w-4 h-4" /></button>
-              <span data-ev-id="ev_a8994c9427" className="text-xs text-gray-600 w-12 text-center font-medium">{Math.round(zoom * 100)}%</span>
-              <button data-ev-id="ev_c12ad2aca1" onClick={() => handleManualZoom(Math.min(2, zoom + 0.1))} className="p-1 text-gray-500 hover:text-[#2daea8] hover:bg-gray-100 rounded"><ZoomIn className="w-4 h-4" /></button>
-              <span data-ev-id="ev_87b9cd2dfd" className="w-px h-4 bg-gray-200" />
-              <button data-ev-id="ev_82c0683a54" onClick={fitToViewport} className="p-1 text-gray-500 hover:text-[#2daea8] hover:bg-gray-100 rounded" title="Fit"><Maximize className="w-4 h-4" /></button>
-            </div>
             {isDraggingPhoto && <div data-ev-id="ev_9f36247ad5" className="absolute inset-0 pointer-events-none z-10 flex items-center justify-center"><div data-ev-id="ev_af642a8a5f" className={`px-4 py-2 rounded-lg shadow-lg ${hoverFrameId ? 'bg-green-500' : 'bg-[#2daea8]'} text-white font-medium`}>{hoverFrameId ? language === 'he' ? 'שחרר' : 'Drop' : language === 'he' ? 'הוסף' : 'Add'}</div></div>}
             {/* Canvas with paper styling */}
             <div data-ev-id="ev_28261697dc" ref={stageContainerRef} className="relative flex-shrink-0" style={{ transform: `scale(${zoom})`, transformOrigin: 'center center' }}>
-              {/* Page labels */}
-              <div data-ev-id="ev_85b90e6e93" className="absolute -top-6 left-0 right-0 flex justify-between px-4 text-xs text-gray-500 font-medium">
-                <span data-ev-id="ev_f427df5290">{isRTL ? language === 'he' ? 'דף ימין' : 'Right Page' : language === 'he' ? 'דף שמאל' : 'Left Page'}</span>
-                <span data-ev-id="ev_4c152fda37">{isRTL ? language === 'he' ? 'דף שמאל' : 'Left Page' : language === 'he' ? 'דף ימין' : 'Right Page'}</span>
+              {/* Page labels with page numbers */}
+              <div data-ev-id="ev_85b90e6e93" className="absolute -top-7 left-0 right-0 flex justify-between px-6 text-[11px] text-gray-500 font-medium">
+                <span data-ev-id="ev_f427df5290">{currentSpread?.spread_type === 'cover' ? language === 'he' ? 'כריכה אחורית' : 'Back Cover' : isRTL ? `${language === 'he' ? 'עמוד' : 'Page'} ${currentSpreadIndex * 2 + 2}` : `${language === 'he' ? 'עמוד' : 'Page'} ${currentSpreadIndex * 2 + 1}`}</span>
+                <span data-ev-id="ev_4c152fda37">{currentSpread?.spread_type === 'cover' ? language === 'he' ? 'כריכה קדמית' : 'Front Cover' : isRTL ? `${language === 'he' ? 'עמוד' : 'Page'} ${currentSpreadIndex * 2 + 1}` : `${language === 'he' ? 'עמוד' : 'Page'} ${currentSpreadIndex * 2 + 2}`}</span>
               </div>
               {/* Paper shadow and edge */}
-              <div data-ev-id="ev_8eea988776" className="absolute -inset-1 bg-white rounded shadow-xl border border-gray-200" />
+              <div data-ev-id="ev_8eea988776" className="absolute -inset-1 bg-white rounded shadow-lg border border-gray-200" />
                 <Stage ref={stageRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} onClick={(e) => {if (e.target === e.target.getStage()) {setSelectedElementId(null);setEditMode('frame');setIsEditingText(false);}}} className="relative z-10">
                   <Layer>
                     <Rect x={0} y={0} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} fill={currentSpread?.canvas_data?.background || '#ffffff'} />
@@ -2380,70 +2372,93 @@ export default function ClientEditor() {
             </div>
             {isEditingText && selectedText && <TextEditorOverlay element={selectedText} zoom={zoom} stageRef={stageRef} onChange={(attrs) => updateElement(selectedText.id, attrs)} onClose={() => setIsEditingText(false)} language={language} />}
           </div>
-          {/* Collapsible Spread Filmstrip */}
+          
+          {/* Zoom/Navigation Control Bar - Below Canvas */}
+          <div data-ev-id="ev_control_bar" className="h-10 bg-white border-t border-gray-200 px-4 flex items-center justify-center gap-4 flex-shrink-0">
+            <div data-ev-id="ev_6ade282a77" className="flex items-center gap-1 bg-gray-50 rounded-lg px-2 py-1 border border-gray-200">
+              <button data-ev-id="ev_acfd436dcb" onClick={() => handleManualZoom(Math.max(0.2, zoom - 0.1))} className="p-1 text-gray-500 hover:text-[#2daea8] hover:bg-white rounded"><ZoomOut className="w-4 h-4" /></button>
+              <span data-ev-id="ev_4fa0a2b1c9" className="text-xs text-gray-600 w-12 text-center font-medium">{Math.round(zoom * 100)}%</span>
+              <button data-ev-id="ev_95221fadd3" onClick={() => handleManualZoom(Math.min(2, zoom + 0.1))} className="p-1 text-gray-500 hover:text-[#2daea8] hover:bg-white rounded"><ZoomIn className="w-4 h-4" /></button>
+              <span data-ev-id="ev_70dafcdeab" className="w-px h-4 bg-gray-300 mx-1" />
+              <button data-ev-id="ev_fdb782c58a" onClick={fitToViewport} className="p-1 text-gray-500 hover:text-[#2daea8] hover:bg-white rounded" title={language === 'he' ? 'התאם' : 'Fit'}><Maximize className="w-4 h-4" /></button>
+            </div>
+            <span data-ev-id="ev_07d4b1878d" className="text-xs text-gray-400">|</span>
+            <span data-ev-id="ev_9e5a90a55d" className="text-xs text-gray-600 font-medium">
+              {currentSpread?.spread_type === 'cover' ? language === 'he' ? 'כריכה' : 'Cover' : `${language === 'he' ? 'פרישה' : 'Spread'} ${currentSpreadIndex + 1}/${spreads.length}`}
+            </span>
+          </div>
+          
+          {/* Collapsible Spread Filmstrip - 108px total when open */}
           {!focusMode &&
-          <div data-ev-id="ev_f487dfbf65" className={`bg-white border-t border-gray-200 flex flex-col transition-all shadow-inner ${filmstripOpen ? 'h-28' : 'h-9'}`}>
+          <div data-ev-id="ev_f487dfbf65" className={`bg-white border-t border-gray-200 flex flex-col transition-all overflow-hidden ${filmstripOpen ? 'h-[108px]' : 'h-8'}`}>
               {/* Filmstrip Header with Toggle */}
               <button data-ev-id="ev_eab09567e9"
             onClick={() => setFilmstripOpen(!filmstripOpen)}
-            className="h-9 px-4 flex items-center justify-between text-gray-600 hover:text-gray-900 flex-shrink-0 border-b border-gray-100">
+            className="h-8 px-4 flex items-center justify-between text-gray-600 hover:text-gray-900 flex-shrink-0 border-b border-gray-100">
 
-                <span data-ev-id="ev_8e3d430ab0" className="text-xs font-medium">{language === 'he' ? `פרישה ${currentSpreadIndex + 1} מתוך ${spreads.length}` : `Spread ${currentSpreadIndex + 1} of ${spreads.length}`}</span>
+                <span data-ev-id="ev_8e3d430ab0" className="text-xs font-medium">{language === 'he' ? 'תצוגה מקדימה' : 'Thumbnails'}</span>
                 <ChevronDown className={`w-4 h-4 transition-transform ${filmstripOpen ? '' : 'rotate-180'}`} />
               </button>
               
-              {/* Spread Thumbnails */}
+              {/* Spread Thumbnails - horizontal scroll only */}
               {filmstripOpen &&
-            <div data-ev-id="ev_filmstrip_content" className="flex-1 px-3 pb-2 flex items-center gap-3 overflow-x-auto">
+            <div data-ev-id="ev_filmstrip_content" className="h-[76px] px-3 flex items-center gap-2 overflow-x-auto overflow-y-hidden">
                   <button data-ev-id="ev_2ee7d2018e"
               onClick={() => setCurrentSpreadIndex(Math.max(0, currentSpreadIndex - 1))}
               disabled={currentSpreadIndex === 0}
-              className="p-1.5 text-gray-400 hover:text-[#2daea8] hover:bg-gray-100 rounded disabled:opacity-30 disabled:hover:bg-transparent">
+              className="p-1 text-gray-400 hover:text-[#2daea8] hover:bg-gray-100 rounded disabled:opacity-30 flex-shrink-0">
 
-                    <PrevArrow className="w-5 h-5" />
+                    <PrevArrow className="w-4 h-4" />
                   </button>
                   
-                  <div data-ev-id="ev_e9ac855e1f" className="flex-1 flex gap-2 overflow-x-auto py-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
-                    {spreads.map((spread, idx) =>
-                <div data-ev-id="ev_de30b6bb04" key={spread.id} className="flex flex-col items-center gap-1 flex-shrink-0">
+                  {spreads.map((spread, idx) => {
+                const spreadObjects = spread.canvas_data?.objects || [];
+                return (
+                  <div data-ev-id="ev_de30b6bb04" key={spread.id} className="flex flex-col items-center gap-0.5 flex-shrink-0">
                   <button data-ev-id="ev_5ad0a1bc88"
-                  onClick={() => setCurrentSpreadIndex(idx)}
-                  className={`h-14 rounded-lg border-2 transition-all overflow-hidden shadow-sm ${
-                  idx === currentSpreadIndex ?
-                  'border-[#2daea8] ring-2 ring-[#2daea8]/30' :
-                  'border-gray-200 hover:border-gray-300'}`
-                  }
-                  style={{ aspectRatio: `${CANVAS_WIDTH} / ${CANVAS_HEIGHT}` }}
-                  title={spread.spread_type === 'cover' ?
-                  language === 'he' ? 'כריכה' : 'Cover' :
-                  `${language === 'he' ? 'פרישה' : 'Spread'} ${idx}`
-                  }>
+                    onClick={() => setCurrentSpreadIndex(idx)}
+                    className={`h-[52px] rounded border-2 transition-all overflow-hidden ${
+                    idx === currentSpreadIndex ?
+                    'border-[#2daea8] ring-1 ring-[#2daea8]/30' :
+                    'border-gray-200 hover:border-gray-300'}`
+                    }
+                    style={{ aspectRatio: `${CANVAS_WIDTH} / ${CANVAS_HEIGHT}`, width: `${52 * (CANVAS_WIDTH / CANVAS_HEIGHT)}px` }}>
 
                         <div data-ev-id="ev_e7518be3d0"
-                    className="w-full h-full flex relative"
-                    style={{ background: spread.canvas_data?.background || '#ffffff' }}>
+                      className="w-full h-full relative"
+                      style={{ background: spread.canvas_data?.background || '#ffffff' }}>
+                          {/* Render actual frame placeholders */}
+                          {spreadObjects.filter((obj: CanvasElement) => obj.type === 'frame').map((frame: CanvasElement) => {
+                          const f = frame as FrameElement;
+                          const scale = 52 / CANVAS_HEIGHT;
+                          return (
+                            <div data-ev-id="ev_f05e32fddc" key={f.id} className="absolute" style={{
+                              left: `${f.x / CANVAS_WIDTH * 100}%`,
+                              top: `${f.y / CANVAS_HEIGHT * 100}%`,
+                              width: `${f.width / CANVAS_WIDTH * 100}%`,
+                              height: `${f.height / CANVAS_HEIGHT * 100}%`,
+                              background: f.photoSrc ? `url(${f.photoSrc}) center/cover` : '#e5e7eb',
+                              border: '0.5px solid #d1d5db',
+                              borderRadius: f.shape === 'circle' ? '50%' : '1px'
+                            }} />);
 
-                          {/* Left page */}
-                          <div data-ev-id="ev_2ab0c9546a" className="w-1/2 h-full border-r border-gray-300/50" />
-                          {/* Right page */}
-                          <div data-ev-id="ev_2e6a2a7816" className="w-1/2 h-full" />
+                        })}
                           {/* Center fold line */}
-                          <div data-ev-id="ev_54254a2ccf" className="absolute left-1/2 top-0 bottom-0 w-px bg-gray-300" />
+                          <div data-ev-id="ev_3efce886ee" className="absolute left-1/2 top-0 bottom-0 w-px bg-gray-300/60" />
                         </div>
                       </button>
-                  <span data-ev-id="ev_5b3c2ae75b" className={`text-[10px] font-medium ${idx === currentSpreadIndex ? 'text-[#2daea8]' : 'text-gray-500'}`}>
-                    {spread.spread_type === 'cover' ? language === 'he' ? 'כריכה' : 'Cover' : `${idx * 2 + 1}-${idx * 2 + 2}`}
+                  <span data-ev-id="ev_5b3c2ae75b" className={`text-[9px] font-medium leading-none ${idx === currentSpreadIndex ? 'text-[#2daea8]' : 'text-gray-500'}`}>
+                    {spread.spread_type === 'cover' ? language === 'he' ? 'כריכה' : 'Cover' : isRTL ? `${idx * 2 + 2}-${idx * 2 + 1}` : `${idx * 2 + 1}-${idx * 2 + 2}`}
                   </span>
-                </div>
-                )}
-                  </div>
+                </div>);
+              })}
                   
                   <button data-ev-id="ev_368ca97d4d"
               onClick={() => setCurrentSpreadIndex(Math.min(spreads.length - 1, currentSpreadIndex + 1))}
               disabled={currentSpreadIndex === spreads.length - 1}
-              className="p-1.5 text-gray-400 hover:text-[#2daea8] hover:bg-gray-100 rounded disabled:opacity-30 disabled:hover:bg-transparent">
+              className="p-1 text-gray-400 hover:text-[#2daea8] hover:bg-gray-100 rounded disabled:opacity-30 flex-shrink-0">
 
-                    <NextArrow className="w-5 h-5" />
+                    <NextArrow className="w-4 h-4" />
                   </button>
                 </div>
             }
