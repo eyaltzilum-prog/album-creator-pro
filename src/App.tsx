@@ -18,6 +18,7 @@ import AdminSettings from '@/pages/admin/Settings';
 import AdminTemplateBuilder from '@/pages/admin/TemplateBuilder';
 import ClientProjects from '@/pages/client/Projects';
 import ClientEditor from '@/pages/client/Editor';
+import AlbumSetup from '@/pages/client/AlbumSetup';
 
 // Layouts
 import { AdminLayout } from '@/components/layout/AdminLayout';
@@ -40,6 +41,7 @@ export default function App() {
       
       {/* Client Routes */}
       <Route path="/projects" element={<ClientLayout><ClientProjects /></ClientLayout>} />
+      <Route path="/album/new" element={<AlbumSetup />} />
       <Route path="/editor/:projectId" element={<ClientEditor />} />
       
       {/* Default Redirect */}

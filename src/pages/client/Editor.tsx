@@ -301,12 +301,12 @@ const GRID_SIZE = 50;
 
 // Calculate snap guides for element positioning
 const calculateSnapGuides = (
-  currentBounds: { x: number; y: number; width: number; height: number },
-  otherElements: CanvasElement[],
-  canvasWidth: number,
-  canvasHeight: number,
-  gridEnabled: boolean
-): { guides: SnapGuide[]; snapX: number | null; snapY: number | null } => {
+currentBounds: {x: number;y: number;width: number;height: number;},
+otherElements: CanvasElement[],
+canvasWidth: number,
+canvasHeight: number,
+gridEnabled: boolean)
+: {guides: SnapGuide[];snapX: number | null;snapY: number | null;} => {
   const guides: SnapGuide[] = [];
   let snapX: number | null = null;
   let snapY: number | null = null;
@@ -336,7 +336,7 @@ const calculateSnapGuides = (
   // Snap to canvas center
   const canvasCenterX = canvasWidth / 2;
   const canvasCenterY = canvasHeight / 2;
-  
+
   if (Math.abs(centerX - canvasCenterX) < SNAP_THRESHOLD) {
     snapX = canvasCenterX - width / 2;
     guides.push({ type: 'vertical', position: canvasCenterX, color: '#22c55e' });
@@ -425,81 +425,81 @@ const getTemplatesByCount = () => {
 };
 
 // Filtered Image Component with Konva filters
-function FilteredKonvaImage({ 
-  image, 
-  x, 
-  y, 
-  width, 
-  height, 
-  adjustments, 
-  filterPreset, 
-  filterIntensity 
-}: { 
-  image: HTMLImageElement;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  adjustments: PhotoAdjustments;
-  filterPreset: FilterPreset;
-  filterIntensity: number;
-}) {
+function FilteredKonvaImage({
+  image,
+  x,
+  y,
+  width,
+  height,
+  adjustments,
+  filterPreset,
+  filterIntensity
+
+
+
+
+
+
+
+
+
+}: {image: HTMLImageElement;x: number;y: number;width: number;height: number;adjustments: PhotoAdjustments;filterPreset: FilterPreset;filterIntensity: number;}) {
   const imageRef = useRef<any>(null);
 
   // Apply filters when adjustments or dimensions change
   useEffect(() => {
     const node = imageRef.current;
     if (!node || !image) return;
-    
+
     // Clear existing cache before re-caching with new dimensions
     node.clearCache();
-    
+
     // Build filters array - always include basic filters for adjustments
     const filters: any[] = [];
-    
+
     // Always add adjustment filters
     filters.push(Konva.Filters.Brighten);
     filters.push(Konva.Filters.Contrast);
     filters.push(Konva.Filters.HSL);
-    
+
     // Add preset filters
     if (filterPreset === 'bw') {
       filters.push(Konva.Filters.Grayscale);
     } else if (filterPreset === 'sepia') {
       filters.push(Konva.Filters.Sepia);
     }
-    
+
     // Set filter values
     try {
       node.filters(filters);
-      
+
       // Calculate combined brightness from brightness + highlights + shadows
       const highlightEffect = (adjustments.highlights || 0) / 200;
       const shadowEffect = (adjustments.shadows || 0) / 200;
-      const combinedBrightness = (adjustments.brightness / 100) + highlightEffect + shadowEffect;
-      
+      const combinedBrightness = adjustments.brightness / 100 + highlightEffect + shadowEffect;
+
       // Brightness: Konva uses -1 to 1 range
       node.brightness(Math.max(-1, Math.min(1, combinedBrightness)));
-      
+
       // Contrast: Konva uses -100 to 100 range
       const sharpnessEffect = (adjustments.sharpness || 0) / 5;
       node.contrast(adjustments.contrast + sharpnessEffect);
-      
+
       // Temperature affects hue
       const temperatureHue = (adjustments.temperature || 0) / 5;
-      
+
       // Saturation via HSL
       node.saturation(adjustments.saturation / 50);
       node.hue(temperatureHue);
-      
+
       // Apply filter presets
       if (filterPreset === 'warm') {
         node.hue(15 * (filterIntensity / 100));
-        node.saturation((adjustments.saturation / 50) + 0.2);
+        node.saturation(adjustments.saturation / 50 + 0.2);
       } else if (filterPreset === 'cool') {
         node.hue(-15 * (filterIntensity / 100));
       } else if (filterPreset === 'vintage') {
-        node.saturation((adjustments.saturation / 50) - 0.3);
+        node.saturation(adjustments.saturation / 50 - 0.3);
         node.brightness(combinedBrightness + 0.1);
       } else if (filterPreset === 'highContrast') {
         node.contrast(adjustments.contrast + sharpnessEffect + 30);
@@ -507,10 +507,10 @@ function FilteredKonvaImage({
         node.contrast(adjustments.contrast + sharpnessEffect - 20);
         node.brightness(combinedBrightness + 0.1);
       } else if (filterPreset === 'vivid') {
-        node.saturation((adjustments.saturation / 50) + 0.5);
+        node.saturation(adjustments.saturation / 50 + 0.5);
         node.contrast(adjustments.contrast + sharpnessEffect + 20);
       }
-      
+
       // Cache at new dimensions for filters to work
       node.cache({ pixelRatio: 1 });
     } catch (e) {
@@ -525,9 +525,9 @@ function FilteredKonvaImage({
       x={x}
       y={y}
       width={width}
-      height={height}
-    />
-  );
+      height={height} />);
+
+
 }
 
 // ============================================================================
@@ -689,7 +689,7 @@ function FrameElementComponent({
     const strokeColor = element.borderColor || '#000000';
     const strokeWidth = element.borderWidth || 2;
     const strokeOpacity = element.borderOpacity ?? 1;
-    
+
     if (element.shape === 'circle') {
       const radius = Math.min(element.width, element.height) / 2;
       return (
@@ -705,9 +705,9 @@ function FrameElementComponent({
           stroke={strokeColor}
           strokeWidth={strokeWidth}
           opacity={strokeOpacity}
-          listening={false}
-        />
-      );
+          listening={false} />);
+
+
     } else if (element.shape === 'oval') {
       return (
         <Shape
@@ -720,9 +720,9 @@ function FrameElementComponent({
           stroke={strokeColor}
           strokeWidth={strokeWidth}
           opacity={strokeOpacity}
-          listening={false}
-        />
-      );
+          listening={false} />);
+
+
     } else if (element.shape === 'heart') {
       return (
         <Shape
@@ -739,9 +739,9 @@ function FrameElementComponent({
           stroke={strokeColor}
           strokeWidth={strokeWidth}
           opacity={strokeOpacity}
-          listening={false}
-        />
-      );
+          listening={false} />);
+
+
     } else {
       return (
         <Rect
@@ -750,9 +750,9 @@ function FrameElementComponent({
           stroke={strokeColor}
           strokeWidth={strokeWidth}
           opacity={strokeOpacity}
-          listening={false}
-        />
-      );
+          listening={false} />);
+
+
     }
   };
 
@@ -770,7 +770,7 @@ function FrameElementComponent({
   // Render shadow shape based on frame shape - uses Blur filter for soft shadow
   const renderShadow = () => {
     if (!element.shadowEnabled) return null;
-    
+
     const fillColor = element.shadowColor || '#000000';
 
     // Common group props for positioning the shadow
@@ -795,10 +795,10 @@ function FrameElementComponent({
             x={element.width / 2}
             y={element.height / 2}
             radius={radius}
-            fill={fillColor}
-          />
-        </Group>
-      );
+            fill={fillColor} />
+
+        </Group>);
+
     } else if (element.shape === 'oval') {
       return (
         <Group {...groupProps}>
@@ -807,10 +807,10 @@ function FrameElementComponent({
             y={element.height / 2}
             radiusX={element.width / 2}
             radiusY={element.height / 2}
-            fill={fillColor}
-          />
-        </Group>
-      );
+            fill={fillColor} />
+
+        </Group>);
+
     } else if (element.shape === 'heart') {
       return (
         <Group {...groupProps}>
@@ -825,10 +825,10 @@ function FrameElementComponent({
               ctx.closePath();
               ctx.fillStrokeShape(shape);
             }}
-            fill={fillColor}
-          />
-        </Group>
-      );
+            fill={fillColor} />
+
+        </Group>);
+
     } else {
       // Rectangle
       return (
@@ -837,10 +837,10 @@ function FrameElementComponent({
             width={element.width}
             height={element.height}
             fill={fillColor}
-            cornerRadius={element.borderRadius || 0}
-          />
-        </Group>
-      );
+            cornerRadius={element.borderRadius || 0} />
+
+        </Group>);
+
     }
   };
 
@@ -867,45 +867,45 @@ function FrameElementComponent({
         onDblTap={handleDblClick}
         onDragMove={handleDragMove}
         onDragEnd={handleDragEnd}
-        onTransformEnd={handleTransformEnd}
-      >
+        onTransformEnd={handleTransformEnd}>
+
         {/* Clipped content group */}
         <Group clipFunc={getClipFunc}>
           {/* Background/placeholder */}
-          {!hasPhoto && (
-            <Rect
-              width={element.width}
-              height={element.height}
-              fill={isDropTarget ? '#dbeafe' : '#f3f4f6'}
-              stroke={isDropTarget ? '#3b82f6' : '#d1d5db'}
-              strokeWidth={isDropTarget ? 2 : 1}
-              dash={[6, 3]}
-            />
-          )}
+          {!hasPhoto &&
+          <Rect
+            width={element.width}
+            height={element.height}
+            fill={isDropTarget ? '#dbeafe' : '#f3f4f6'}
+            stroke={isDropTarget ? '#3b82f6' : '#d1d5db'}
+            strokeWidth={isDropTarget ? 2 : 1}
+            dash={[6, 3]} />
+
+          }
           
           {/* Photo if present */}
-          {hasPhoto && (
-            <Group
-              x={imageProps.x + photoFlipOffset.offsetX}
-              y={imageProps.y + photoFlipOffset.offsetY}
-              scaleX={photoScaleX}
-              scaleY={photoScaleY}
-              rotation={element.photoRotation}
-              offsetX={element.photoRotation ? imageProps.width / 2 : 0}
-              offsetY={element.photoRotation ? imageProps.height / 2 : 0}
-            >
+          {hasPhoto &&
+          <Group
+            x={imageProps.x + photoFlipOffset.offsetX}
+            y={imageProps.y + photoFlipOffset.offsetY}
+            scaleX={photoScaleX}
+            scaleY={photoScaleY}
+            rotation={element.photoRotation}
+            offsetX={element.photoRotation ? imageProps.width / 2 : 0}
+            offsetY={element.photoRotation ? imageProps.height / 2 : 0}>
+
               <FilteredKonvaImage
-                image={image!}
-                x={element.photoRotation ? imageProps.width / 2 : 0}
-                y={element.photoRotation ? imageProps.height / 2 : 0}
-                width={imageProps.width}
-                height={imageProps.height}
-                adjustments={element.adjustments}
-                filterPreset={element.filterPreset}
-                filterIntensity={element.filterIntensity}
-              />
+              image={image!}
+              x={element.photoRotation ? imageProps.width / 2 : 0}
+              y={element.photoRotation ? imageProps.height / 2 : 0}
+              width={imageProps.width}
+              height={imageProps.height}
+              adjustments={element.adjustments}
+              filterPreset={element.filterPreset}
+              filterIntensity={element.filterIntensity} />
+
             </Group>
-          )}
+          }
         </Group>
 
         {/* Border - rendered on top of content */}
@@ -913,38 +913,38 @@ function FrameElementComponent({
       </Group>
 
       {/* Photo mode border indicator */}
-      {isPhotoMode && (
-        <Rect
-          x={element.x - 2}
-          y={element.y - 2}
-          width={element.width + 4}
-          height={element.height + 4}
-          stroke="#f97316"
-          strokeWidth={2}
-          dash={[6, 4]}
-          listening={false}
-        />
-      )}
+      {isPhotoMode &&
+      <Rect
+        x={element.x - 2}
+        y={element.y - 2}
+        width={element.width + 4}
+        height={element.height + 4}
+        stroke="#f97316"
+        strokeWidth={2}
+        dash={[6, 4]}
+        listening={false} />
+
+      }
 
       {/* Transformer for frame mode */}
-      {isSelected && !element.locked && editMode === 'frame' && (
-        <Transformer
-          ref={trRef}
-          rotateEnabled={true}
-          keepRatio={element.aspectLocked}
-          anchorFill="#22c55e"
-          anchorStroke="#16a34a"
-          anchorSize={10}
-          anchorCornerRadius={2}
-          borderStroke="#22c55e"
-          borderStrokeWidth={2}
-          boundBoxFunc={(oldBox, newBox) =>
-            newBox.width < 50 || newBox.height < 50 ? oldBox : newBox
-          }
-        />
-      )}
-    </>
-  );
+      {isSelected && !element.locked && editMode === 'frame' &&
+      <Transformer
+        ref={trRef}
+        rotateEnabled={true}
+        keepRatio={element.aspectLocked}
+        anchorFill="#22c55e"
+        anchorStroke="#16a34a"
+        anchorSize={10}
+        anchorCornerRadius={2}
+        borderStroke="#22c55e"
+        borderStrokeWidth={2}
+        boundBoxFunc={(oldBox, newBox) =>
+        newBox.width < 50 || newBox.height < 50 ? oldBox : newBox
+        } />
+
+      }
+    </>);
+
 }
 
 // ============================================================================
@@ -1275,8 +1275,8 @@ function AdjustmentSlider({ label, value, onChange, min = -100, max = 100, icon:
         <span data-ev-id="ev_1ef843db7d" className="text-xs text-gray-300">{value}</span>
       </div>
       <input data-ev-id="ev_809c4bbee8" type="range" min={min} max={max} value={value} onChange={(e) => onChange(parseInt(e.target.value))} className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer" />
-    </div>
-  );
+    </div>);
+
 }
 
 // ============================================================================
@@ -1338,12 +1338,18 @@ export default function ClientEditor() {
   // UI state
   const [activePanel, setActivePanel] = useState<string>('photos');
   const [activePropertiesTab, setActivePropertiesTab] = useState<'frame' | 'photo' | 'adjustments' | 'typography' | 'effects' | 'transform'>('frame');
-  const [zoom, setZoom] = useState(0.6);
+  const [zoom, setZoom] = useState(1);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showAlbumSizeModal, setShowAlbumSizeModal] = useState(false);
   const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
   const [templateName, setTemplateName] = useState('');
   const [showFontPicker, setShowFontPicker] = useState(false);
+
+  // New compact UI state
+  const [leftDrawerOpen, setLeftDrawerOpen] = useState(false);
+  const [rightPanelOpen, setRightPanelOpen] = useState(true);
+  const [filmstripOpen, setFilmstripOpen] = useState(true);
+  const [focusMode, setFocusMode] = useState(false);
 
   // Photos & drag state
   const [uploadedPhotos, setUploadedPhotos] = useState<string[]>([]);
@@ -1385,6 +1391,35 @@ export default function ClientEditor() {
   };
   const { width: CANVAS_WIDTH, height: CANVAS_HEIGHT } = getCanvasDimensions();
   const FOLD_LINE_X = CANVAS_WIDTH / 2;
+
+  // Calculate fit-to-viewport zoom
+  const calculateFitZoom = useCallback(() => {
+    if (!canvasContainerRef.current) return 1;
+    const container = canvasContainerRef.current;
+    const padding = 32; // 16px on each side
+    const availableWidth = container.clientWidth - padding;
+    const availableHeight = container.clientHeight - padding;
+    const scaleX = availableWidth / CANVAS_WIDTH;
+    const scaleY = availableHeight / CANVAS_HEIGHT;
+    return Math.min(scaleX, scaleY, 1.5); // Cap at 150%
+  }, [CANVAS_WIDTH, CANVAS_HEIGHT]);
+
+  // Auto-fit on mount and resize
+  useEffect(() => {
+    const handleResize = () => {
+      const fitZoom = calculateFitZoom();
+      setZoom(fitZoom);
+    };
+    // Initial fit after a short delay to ensure container is measured
+    const timer = setTimeout(handleResize, 100);
+    window.addEventListener('resize', handleResize);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [calculateFitZoom, leftDrawerOpen, rightPanelOpen, filmstripOpen, focusMode]);
+
+  const fitToViewport = () => setZoom(calculateFitZoom());
 
   // Current spread data
   const currentSpread = spreads[currentSpreadIndex];
@@ -1942,97 +1977,139 @@ export default function ClientEditor() {
   const NextArrow = isRTL ? ChevronLeft : ChevronRight;
 
   return (
-    <div data-ev-id="ev_429acfd919" className="h-screen flex flex-col bg-gray-900 overflow-hidden">
-      {/* Top Toolbar */}
-      <header data-ev-id="ev_ba397c437d" className="h-14 bg-gray-800 border-b border-gray-700 px-4 flex items-center justify-between flex-shrink-0">
-        <div data-ev-id="ev_476e159c84" className="flex items-center gap-3">
-          <button data-ev-id="ev_c2d9dcdd88" onClick={() => navigate('/projects')} className="flex items-center gap-2 text-gray-300 hover:text-white">
+    <div data-ev-id="ev_429acfd919" className="h-[100dvh] flex flex-col bg-gray-900 overflow-hidden">
+      {/* Compact Top Toolbar - 56px */}
+      <header data-ev-id="ev_ba397c437d" className="h-14 bg-gray-800 border-b border-gray-700 px-3 flex items-center justify-between flex-shrink-0">
+        <div data-ev-id="ev_476e159c84" className="flex items-center gap-2">
+          <button data-ev-id="ev_c2d9dcdd88" onClick={() => navigate('/projects')} className="flex items-center gap-1 text-gray-300 hover:text-white text-sm">
             {isRTL ? <ArrowRight className="w-5 h-5" /> : <ArrowLeft className="w-5 h-5" />}
             <span data-ev-id="ev_bb7222526a">{t('back')}</span>
           </button>
           <span data-ev-id="ev_82fa8dc3be" className="text-gray-600">|</span>
           <span data-ev-id="ev_5c62f73c64" className="text-white font-medium truncate max-w-[200px]">{project?.name}</span>
         </div>
-        <div data-ev-id="ev_3bc3d4df22" className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => setSnappingEnabled(!snappingEnabled)} className="text-gray-400"><Magnet className="w-4 h-4" /></Button>
-          <Button variant="ghost" size="sm" onClick={() => setGridEnabled(!gridEnabled)} className="text-gray-400"><Grid3X3 className="w-4 h-4" /></Button>
-          <span data-ev-id="ev_div1" className="w-px h-6 bg-gray-700" />
-          <Button variant="ghost" size="sm" onClick={() => setShowPreview(true)} className="text-gray-400"><Eye className="w-4 h-4" /></Button>
-          <Button variant="secondary" size="sm" onClick={saveProject} disabled={saving || !canEdit}>{saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}</Button>
-          {canEdit && <Button size="sm" onClick={() => setShowSubmitModal(true)}><Send className="w-4 h-4 mr-1" />{language === 'he' ? 'שלח' : 'Submit'}</Button>}
+        <div data-ev-id="ev_3bc3d4df22" className="flex items-center gap-1">
+          <Button variant="ghost" size="sm" onClick={fitToViewport} className="text-gray-400 px-2" title={language === 'he' ? 'התאם לחלון' : 'Fit'}><Maximize className="w-4 h-4" /></Button>
+          <Button variant="ghost" size="sm" onClick={() => setFocusMode(!focusMode)} className={`px-2 ${focusMode ? 'text-primary' : 'text-gray-400'}`} title={language === 'he' ? 'מצב מיקוד' : 'Focus'}><Focus className="w-4 h-4" /></Button>
+          <span data-ev-id="ev_div1" className="w-px h-5 bg-gray-700" />
+          <Button variant="ghost" size="sm" onClick={() => setSnappingEnabled(!snappingEnabled)} className={`px-2 ${snappingEnabled ? 'text-primary' : 'text-gray-400'}`}><Magnet className="w-4 h-4" /></Button>
+          <Button variant="ghost" size="sm" onClick={() => setGridEnabled(!gridEnabled)} className={`px-2 ${gridEnabled ? 'text-primary' : 'text-gray-400'}`}><Grid3X3 className="w-4 h-4" /></Button>
+          <span data-ev-id="ev_div2" className="w-px h-5 bg-gray-700" />
+          <Button variant="ghost" size="sm" onClick={() => setShowPreview(true)} className="text-gray-400 px-2"><Eye className="w-4 h-4" /></Button>
+          <Button variant="secondary" size="sm" onClick={saveProject} disabled={saving || !canEdit} className="px-3">{saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}</Button>
+          {canEdit && <Button size="sm" onClick={() => setShowSubmitModal(true)} className="px-3"><Send className="w-4 h-4" /></Button>}
         </div>
       </header>
 
       <div data-ev-id="ev_main_area" className="flex-1 flex overflow-hidden">
-        {/* Left Sidebar */}
-        <aside data-ev-id="ev_left_sidebar" className={`w-80 bg-gray-800 border-${isRTL ? 'l' : 'r'} border-gray-700 flex flex-col ${isRTL ? 'order-last' : ''}`}>
-          <div data-ev-id="ev_476e159c84" className="grid grid-cols-4 border-b border-gray-700">
+        {/* Left Icon Rail + Expandable Drawer */}
+        {!focusMode &&
+        <div data-ev-id="ev_left_rail_container" className={`flex ${isRTL ? 'order-last flex-row-reverse' : 'flex-row'}`}>
+            {/* Narrow Icon Rail - 56px */}
+            <aside data-ev-id="ev_left_rail" className={`w-14 bg-gray-800 border-${isRTL ? 'l' : 'r'} border-gray-700 flex flex-col py-2`}>
+              <div data-ev-id="ev_rail_icons" className="flex flex-col gap-1 px-2">
+                {sidebarPanels.map((panel) =>
+              <button
+                data-ev-id="ev_rail_btn"
+                key={panel.id}
+                onClick={() => {
+                  if (activePanel === panel.id && leftDrawerOpen) {
+                    setLeftDrawerOpen(false);
+                  } else {
+                    setActivePanel(panel.id);
+                    setLeftDrawerOpen(true);
+                  }
+                }}
+                className={`p-2 rounded-lg transition-colors flex flex-col items-center justify-center ${
+                activePanel === panel.id && leftDrawerOpen ?
+                'bg-primary text-white' :
+                'text-gray-400 hover:bg-gray-700 hover:text-white'}`
+                }
+                title={panel.label}>
+
+                    <panel.icon className="w-5 h-5" />
+                    <span data-ev-id="ev_19206e31e5" className="text-[9px] mt-0.5 leading-tight">{panel.label.slice(0, 4)}</span>
+                  </button>
+              )}
+              </div>
+            </aside>
+            
+            {/* Expandable Drawer - 240px */}
+            {leftDrawerOpen &&
+          <aside data-ev-id="ev_left_drawer" className={`w-60 bg-gray-800 border-${isRTL ? 'l' : 'r'} border-gray-700 flex flex-col`}>
+                <div data-ev-id="ev_drawer_header" className="h-10 px-3 flex items-center justify-between border-b border-gray-700">
+                  <span data-ev-id="ev_c4bce0997b" className="text-sm font-medium text-white">{sidebarPanels.find((p) => p.id === activePanel)?.label}</span>
+                  <button data-ev-id="ev_7c4df16039" onClick={() => setLeftDrawerOpen(false)} className="p-1 text-gray-400 hover:text-white rounded">
+                    <ChevronLeft className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} />
+                  </button>
+                </div>
+                <div data-ev-id="ev_sidebar_content" className="flex-1 overflow-y-auto p-3">
             {sidebarPanels.map((panel) =>
-            <button data-ev-id="ev_6055402a3e" key={panel.id} onClick={() => setActivePanel(panel.id)} className={`py-3 text-[10px] ${activePanel === panel.id ? 'bg-gray-700 text-white' : 'bg-gray-750 text-gray-400'}`}>
+              <button data-ev-id="ev_6055402a3e" key={panel.id} onClick={() => setActivePanel(panel.id)} className={`py-3 text-[10px] ${activePanel === panel.id ? 'bg-gray-700 text-white' : 'bg-gray-750 text-gray-400'}`}>
                 <panel.icon className="w-4 h-4 mx-auto mb-1" />{panel.label}
               </button>
-            )}
+              )}
           </div>
           <div data-ev-id="ev_sidebar_content" className="flex-1 overflow-y-auto p-4">
             {activePanel === 'photos' &&
-            <div data-ev-id="ev_photos_panel" className="flex flex-col gap-4">
+              <div data-ev-id="ev_photos_panel" className="flex flex-col gap-4">
                 <input data-ev-id="ev_34ba1bf4a1" ref={fileInputRef} type="file" multiple accept="image/*" onChange={handlePhotoUpload} className="hidden" />
                 <Button onClick={() => fileInputRef.current?.click()} className="w-full"><Upload className="w-4 h-4 mr-2" />{language === 'he' ? 'העלה תמונות' : 'Upload Photos'}</Button>
                 <div data-ev-id="ev_photos_grid" className="grid grid-cols-2 gap-2">
                   {uploadedPhotos.map((photo, i) =>
-                <motion.button key={i} draggable onDragStart={(e) => handlePhotoDragStart(e as any, photo)} onDragEnd={handlePhotoDragEnd} whileHover={{ scale: 1.03 }} onClick={() => addPhotoToCanvas(photo)} className={`aspect-square rounded-lg overflow-hidden border-2 cursor-grab ${draggedPhotoUrl === photo ? 'border-primary opacity-50' : 'border-transparent hover:border-primary'}`}>
+                  <motion.button data-ev-id="ev_d8d35a7b5b" key={i} draggable onDragStart={(e) => handlePhotoDragStart(e as any, photo)} onDragEnd={handlePhotoDragEnd} whileHover={{ scale: 1.03 }} onClick={() => addPhotoToCanvas(photo)} className={`aspect-square rounded-lg overflow-hidden border-2 cursor-grab ${draggedPhotoUrl === photo ? 'border-primary opacity-50' : 'border-transparent hover:border-primary'}`}>
                       <img data-ev-id="ev_c7a7495f6e" src={photo} alt="" className="w-full h-full object-cover" />
                     </motion.button>
-                )}
+                  )}
                 </div>
               </div>
-            }
+              }
             {activePanel === 'templates' &&
-            <div data-ev-id="ev_templates_panel" className="flex flex-col gap-4">
+              <div data-ev-id="ev_templates_panel" className="flex flex-col gap-4">
                 <div data-ev-id="ev_template_tabs" className="flex gap-1 flex-wrap">
                   {templateCounts.map((count) =>
-                <button data-ev-id="ev_42cb4e6cd1" key={count} onClick={() => setSelectedTemplateCategory(count)} className={`px-3 py-1 rounded text-xs ${selectedTemplateCategory === count ? 'bg-primary text-white' : 'bg-gray-700 text-gray-400'}`}>{count}</button>
-                )}
+                  <button data-ev-id="ev_42cb4e6cd1" key={count} onClick={() => setSelectedTemplateCategory(count)} className={`px-3 py-1 rounded text-xs ${selectedTemplateCategory === count ? 'bg-primary text-white' : 'bg-gray-700 text-gray-400'}`}>{count}</button>
+                  )}
                 </div>
                 <div data-ev-id="ev_template_grid" className="grid grid-cols-2 gap-2">
                   {(templatesByCount[selectedTemplateCategory] || []).map((template, i) =>
-                <button data-ev-id="ev_c430d42e1f" key={i} onClick={() => applyTemplate(template)} className="aspect-video bg-gray-700 rounded-lg p-2 hover:bg-gray-600 relative">
+                  <button data-ev-id="ev_c430d42e1f" key={i} onClick={() => applyTemplate(template)} className="aspect-video bg-gray-700 rounded-lg p-2 hover:bg-gray-600 relative">
                       {template.frames.map((frame, fi) =>
-                  <div data-ev-id="ev_073508ecdc" key={fi} className="absolute bg-gray-500 border border-gray-400" style={{ left: `${frame.x}%`, top: `${frame.y}%`, width: `${frame.width}%`, height: `${frame.height}%` }} />
-                  )}
+                    <div data-ev-id="ev_073508ecdc" key={fi} className="absolute bg-gray-500 border border-gray-400" style={{ left: `${frame.x}%`, top: `${frame.y}%`, width: `${frame.width}%`, height: `${frame.height}%` }} />
+                    )}
                     </button>
-                )}
+                  )}
                 </div>
               </div>
-            }
+              }
             {/* Backgrounds Panel */}
             {activePanel === 'backgrounds' &&
-            <div data-ev-id="ev_2c0c2026c2" className="flex flex-col gap-4">
+              <div data-ev-id="ev_2c0c2026c2" className="flex flex-col gap-4">
                 {/* Search */}
                 <div data-ev-id="ev_c3ea6db099" className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input data-ev-id="ev_1927bc4d83"
-                type="text"
-                value={bgSearchQuery}
-                onChange={(e) => setBgSearchQuery(e.target.value)}
-                placeholder={language === 'he' ? 'חיפוש רקעים...' : 'Search backgrounds...'}
-                className="w-full bg-gray-700 border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm text-white placeholder-gray-400" />
+                  type="text"
+                  value={bgSearchQuery}
+                  onChange={(e) => setBgSearchQuery(e.target.value)}
+                  placeholder={language === 'he' ? 'חיפוש רקעים...' : 'Search backgrounds...'}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm text-white placeholder-gray-400" />
 
                 </div>
                 {/* Category tabs */}
                 <div data-ev-id="ev_8f8eef1ee1" className="flex gap-1 flex-wrap">
                   <button data-ev-id="ev_da5d4055d3" onClick={() => setSelectedBgCategory('all')} className={`px-3 py-1 rounded text-xs ${selectedBgCategory === 'all' ? 'bg-primary text-white' : 'bg-gray-700 text-gray-400'}`}>{language === 'he' ? 'הכל' : 'All'}</button>
                   {Object.keys(backgroundsByCategory).map((cat) =>
-                <button data-ev-id="ev_b0f38e4723" key={cat} onClick={() => setSelectedBgCategory(cat)} className={`px-3 py-1 rounded text-xs ${selectedBgCategory === cat ? 'bg-primary text-white' : 'bg-gray-700 text-gray-400'}`}>{cat}</button>
-                )}
+                  <button data-ev-id="ev_b0f38e4723" key={cat} onClick={() => setSelectedBgCategory(cat)} className={`px-3 py-1 rounded text-xs ${selectedBgCategory === cat ? 'bg-primary text-white' : 'bg-gray-700 text-gray-400'}`}>{cat}</button>
+                  )}
                 </div>
                 {/* Backgrounds grid */}
                 <div data-ev-id="ev_b3467d482d" className="grid grid-cols-2 gap-2">
                   {(backgrounds ?? []).
-                filter((bg) => selectedBgCategory === 'all' || bg.category === selectedBgCategory).
-                filter((bg) => !bgSearchQuery || bg.name.toLowerCase().includes(bgSearchQuery.toLowerCase()) || (bg.tags ?? []).some((t) => t.toLowerCase().includes(bgSearchQuery.toLowerCase()))).
-                map((bg) =>
-                <motion.button
+                  filter((bg) => selectedBgCategory === 'all' || bg.category === selectedBgCategory).
+                  filter((bg) => !bgSearchQuery || bg.name.toLowerCase().includes(bgSearchQuery.toLowerCase()) || (bg.tags ?? []).some((t) => t.toLowerCase().includes(bgSearchQuery.toLowerCase()))).
+                  map((bg) =>
+                  <motion.button data-ev-id="ev_e4b52943b3"
                   key={bg.id}
                   whileHover={{ scale: 1.03 }}
                   onClick={() => setBackgroundFromAsset(bg)}
@@ -2040,29 +2117,29 @@ export default function ClientEditor() {
                   title={bg.name}>
 
                       {isColorBackground(bg) ?
-                  <div data-ev-id="ev_d950d454ca" className="w-full h-full" style={{ background: getBackgroundValue(bg) }} /> :
+                    <div data-ev-id="ev_d950d454ca" className="w-full h-full" style={{ background: getBackgroundValue(bg) }} /> :
 
-                  <img data-ev-id="ev_67d1fd59f6" src={bg.thumbnail_url || bg.file_url} alt={bg.name} className="w-full h-full object-cover" />
-                  }
+                    <img data-ev-id="ev_67d1fd59f6" src={bg.thumbnail_url || bg.file_url} alt={bg.name} className="w-full h-full object-cover" />
+                    }
                     </motion.button>
-                )}
+                  )}
                 </div>
                 {assetsLoading && <div data-ev-id="ev_a8dd1182fc" className="flex justify-center py-4"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>}
                 {!assetsLoading && backgrounds.length === 0 && <p data-ev-id="ev_8afbbd556b" className="text-center text-gray-500 text-sm">{language === 'he' ? 'אין רקעים זמינים' : 'No backgrounds available'}</p>}
               </div>
-            }
+              }
             {/* Frames Panel */}
             {activePanel === 'frames' &&
-            <div data-ev-id="ev_85e32e088c" className="flex flex-col gap-4">
+              <div data-ev-id="ev_85e32e088c" className="flex flex-col gap-4">
                 {/* Search */}
                 <div data-ev-id="ev_cd7dcd5c4d" className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input data-ev-id="ev_2f0a2a2f96"
-                type="text"
-                value={frameSearchQuery}
-                onChange={(e) => setFrameSearchQuery(e.target.value)}
-                placeholder={language === 'he' ? 'חיפוש מסגרות...' : 'Search frames...'}
-                className="w-full bg-gray-700 border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm text-white placeholder-gray-400" />
+                  type="text"
+                  value={frameSearchQuery}
+                  onChange={(e) => setFrameSearchQuery(e.target.value)}
+                  placeholder={language === 'he' ? 'חיפוש מסגרות...' : 'Search frames...'}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm text-white placeholder-gray-400" />
 
                 </div>
                 {/* Quick add frame shapes */}
@@ -2080,9 +2157,9 @@ export default function ClientEditor() {
                 {/* Admin frames grid */}
                 <div data-ev-id="ev_f2f3593a8c" className="grid grid-cols-2 gap-2">
                   {(globalFrames ?? []).
-                filter((frame) => !frameSearchQuery || frame.name.toLowerCase().includes(frameSearchQuery.toLowerCase()) || (frame.tags ?? []).some((t) => t.toLowerCase().includes(frameSearchQuery.toLowerCase()))).
-                map((frame) =>
-                <motion.button
+                  filter((frame) => !frameSearchQuery || frame.name.toLowerCase().includes(frameSearchQuery.toLowerCase()) || (frame.tags ?? []).some((t) => t.toLowerCase().includes(frameSearchQuery.toLowerCase()))).
+                  map((frame) =>
+                  <motion.button data-ev-id="ev_36aa8c0576"
                   key={frame.id}
                   whileHover={{ scale: 1.03 }}
                   onClick={() => addAdminFrameToCanvas(frame)}
@@ -2090,55 +2167,58 @@ export default function ClientEditor() {
                   title={frame.name}>
 
                       {frame.thumbnail_url || frame.file_url ?
-                  <img data-ev-id="ev_96a048727b" src={frame.thumbnail_url || frame.file_url} alt={frame.name} className="w-full h-full object-contain" /> :
+                    <img data-ev-id="ev_96a048727b" src={frame.thumbnail_url || frame.file_url} alt={frame.name} className="w-full h-full object-contain" /> :
 
-                  <div data-ev-id="ev_525abccbb3" className="w-full h-full flex items-center justify-center">
+                    <div data-ev-id="ev_525abccbb3" className="w-full h-full flex items-center justify-center">
                           <FrameIcon className="w-8 h-8 text-gray-500" />
                         </div>
-                  }
+                    }
                     </motion.button>
-                )}
+                  )}
                 </div>
                 {assetsLoading && <div data-ev-id="ev_e64c3c0765" className="flex justify-center py-4"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>}
                 {!assetsLoading && globalFrames.length === 0 && <p data-ev-id="ev_c17aba11d6" className="text-center text-gray-500 text-sm">{language === 'he' ? 'אין מסגרות זמינות' : 'No frames available'}</p>}
               </div>
-            }
+              }
             {activePanel === 'text' &&
-            <div data-ev-id="ev_76cbb5202f" className="flex flex-col gap-4">
+              <div data-ev-id="ev_76cbb5202f" className="flex flex-col gap-4">
                 <Button onClick={addTextElement} className="w-full"><Type className="w-4 h-4 mr-2" />{language === 'he' ? 'הוסף טקסט' : 'Add Text'}</Button>
               </div>
-            }
+              }
             {activePanel === 'layers' &&
-            <div data-ev-id="ev_77d0e08806" className="flex-1 overflow-y-auto p-4">
+              <div data-ev-id="ev_77d0e08806" className="flex-1 overflow-y-auto p-4">
                 {[...elements].sort((a, b) => b.zIndex - a.zIndex).map((element) =>
-              <div data-ev-id="ev_77d0e08806" key={element.id} onClick={() => setSelectedElementId(element.id)} className={`group flex items-center gap-2 p-2 rounded cursor-pointer ${selectedElementId === element.id ? 'bg-primary/20 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}>
+                <div data-ev-id="ev_77d0e08806" key={element.id} onClick={() => setSelectedElementId(element.id)} className={`group flex items-center gap-2 p-2 rounded cursor-pointer ${selectedElementId === element.id ? 'bg-primary/20 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}>
                     {element.type === 'frame' ? <FrameIcon className="w-4 h-4" /> : <Type className="w-4 h-4" />}
                     <span data-ev-id="ev_3ea27307ea" className="flex-1 truncate text-sm">{element.name || `${element.type}-${element.id.slice(-4)}`}</span>
                     <button data-ev-id="ev_4797f33edf" onClick={(e) => {e.stopPropagation();updateCurrentSpread({ objects: elements.filter((el) => el.id !== element.id), background: currentSpread?.canvas_data?.background || '#ffffff' });if (selectedElementId === element.id) setSelectedElementId(null);}} className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-500/20 rounded">
                       <Trash2 className="w-3 h-3 text-red-400" />
                     </button>
                   </div>
-              )}
+                )}
 
               </div>
-            }
+              }
           </div>
-        </aside>
+              </aside>
+          }
+          </div>
+        }
 
-        {/* Main Canvas */}
-        <main data-ev-id="ev_a755909775" className="flex-1 flex flex-col overflow-hidden">
-          <div data-ev-id="ev_0c8caac4e0" ref={canvasContainerRef} onDragOver={handleCanvasDragOver} onDragLeave={() => {setIsOverDropZone(false);setHoverFrameId(null);}} onDrop={handleCanvasDrop} className={`flex-1 overflow-auto bg-gray-950 flex items-center justify-center p-4 relative ${isOverDropZone ? 'ring-2 ring-primary ring-inset' : ''}`}>
-            {/* Grid & Snap Toggle Buttons */}
-            <div data-ev-id="ev_b6ed4460b1" className="absolute top-4 right-4 z-20 flex gap-2">
-              <button data-ev-id="ev_e3e288e831" onClick={() => setGridEnabled(!gridEnabled)} className={`p-2 rounded-lg ${gridEnabled ? 'bg-primary text-white' : 'bg-gray-700 text-gray-400'} hover:bg-gray-600 transition-colors`} title={language === 'he' ? 'רשת' : 'Grid'}>
-                <Grid3X3 className="w-5 h-5" />
-              </button>
-              <button data-ev-id="ev_7916e23056" onClick={() => setSnappingEnabled(!snappingEnabled)} className={`p-2 rounded-lg ${snappingEnabled ? 'bg-primary text-white' : 'bg-gray-700 text-gray-400'} hover:bg-gray-600 transition-colors`} title={language === 'he' ? 'הצמד לרשת' : 'Snap to Grid'}>
-                <Magnet className="w-5 h-5" />
-              </button>
+        {/* Main Canvas - Maximum Space */}
+        <main data-ev-id="ev_a755909775" className="flex-1 flex flex-col overflow-hidden min-w-0">
+          <div data-ev-id="ev_0c8caac4e0" ref={canvasContainerRef} onDragOver={handleCanvasDragOver} onDragLeave={() => {setIsOverDropZone(false);setHoverFrameId(null);}} onDrop={handleCanvasDrop} className={`flex-1 overflow-hidden bg-gray-950 flex items-center justify-center relative ${isOverDropZone ? 'ring-2 ring-primary ring-inset' : ''}`}>
+            {/* Zoom Controls - Floating */}
+            <div data-ev-id="ev_zoom_controls" className="absolute bottom-4 left-4 z-20 flex items-center gap-1 bg-gray-800/90 backdrop-blur rounded-lg px-2 py-1">
+              <button data-ev-id="ev_ecb3eefecd" onClick={() => setZoom(Math.max(0.2, zoom - 0.1))} className="p-1 text-gray-400 hover:text-white"><ZoomOut className="w-4 h-4" /></button>
+              <span data-ev-id="ev_a8994c9427" className="text-xs text-gray-300 w-12 text-center">{Math.round(zoom * 100)}%</span>
+              <button data-ev-id="ev_c12ad2aca1" onClick={() => setZoom(Math.min(2, zoom + 0.1))} className="p-1 text-gray-400 hover:text-white"><ZoomIn className="w-4 h-4" /></button>
+              <span data-ev-id="ev_87b9cd2dfd" className="w-px h-4 bg-gray-600" />
+              <button data-ev-id="ev_82c0683a54" onClick={fitToViewport} className="p-1 text-gray-400 hover:text-white" title="Fit"><Maximize className="w-4 h-4" /></button>
             </div>
             {isDraggingPhoto && <div data-ev-id="ev_9f36247ad5" className="absolute inset-0 pointer-events-none z-10 flex items-center justify-center"><div data-ev-id="ev_af642a8a5f" className={`px-4 py-2 rounded-lg ${hoverFrameId ? 'bg-green-500' : 'bg-primary'} text-white`}>{hoverFrameId ? language === 'he' ? 'שחרר' : 'Drop' : language === 'he' ? 'הוסף' : 'Add'}</div></div>}
-            <div data-ev-id="ev_28261697dc" ref={stageContainerRef} className="relative" style={{ transform: `scale(${zoom})`, transformOrigin: 'center center' }}>
+            {/* Canvas with proper centering */}
+            <div data-ev-id="ev_28261697dc" ref={stageContainerRef} className="relative flex-shrink-0" style={{ transform: `scale(${zoom})`, transformOrigin: 'center center' }}>
                 <Stage ref={stageRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} onClick={(e) => {if (e.target === e.target.getStage()) {setSelectedElementId(null);setEditMode('frame');setIsEditingText(false);}}} className="shadow-2xl">
                   <Layer>
                     <Rect x={0} y={0} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} fill={currentSpread?.canvas_data?.background || '#ffffff'} />
@@ -2163,20 +2243,69 @@ export default function ClientEditor() {
             </div>
             {isEditingText && selectedText && <TextEditorOverlay element={selectedText} zoom={zoom} stageRef={stageRef} onChange={(attrs) => updateElement(selectedText.id, attrs)} onClose={() => setIsEditingText(false)} language={language} />}
           </div>
-          {/* Spread Navigator */}
-          <div data-ev-id="ev_f487dfbf65" className="h-20 bg-gray-800 border-t border-gray-700 px-4 flex items-center gap-4">
-            <div data-ev-id="ev_00ad0014f4" className="flex items-center gap-1">
-              <Button variant="ghost" size="sm" onClick={() => setZoom(Math.max(0.2, zoom - 0.1))} className="text-gray-400 p-1"><ZoomOut className="w-4 h-4" /></Button>
-              <span data-ev-id="ev_9d5cc52b9d" className="text-xs text-gray-400 w-10 text-center">{Math.round(zoom * 100)}%</span>
-              <Button variant="ghost" size="sm" onClick={() => setZoom(Math.min(2, zoom + 0.1))} className="text-gray-400 p-1"><ZoomIn className="w-4 h-4" /></Button>
+          {/* Collapsible Spread Filmstrip */}
+          {!focusMode &&
+          <div data-ev-id="ev_f487dfbf65" className={`bg-gray-800 border-t border-gray-700 flex flex-col transition-all ${filmstripOpen ? 'h-24' : 'h-8'}`}>
+              {/* Filmstrip Header with Toggle */}
+              <button data-ev-id="ev_eab09567e9"
+            onClick={() => setFilmstripOpen(!filmstripOpen)}
+            className="h-8 px-3 flex items-center justify-between text-gray-400 hover:text-white flex-shrink-0">
+
+                <span data-ev-id="ev_8e3d430ab0" className="text-xs">{language === 'he' ? `פרישה ${currentSpreadIndex + 1} / ${spreads.length}` : `Spread ${currentSpreadIndex + 1} / ${spreads.length}`}</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${filmstripOpen ? '' : 'rotate-180'}`} />
+              </button>
+              
+              {/* Spread Thumbnails */}
+              {filmstripOpen &&
+            <div data-ev-id="ev_filmstrip_content" className="flex-1 px-3 pb-2 flex items-center gap-2 overflow-x-auto">
+                  <button data-ev-id="ev_2ee7d2018e"
+              onClick={() => setCurrentSpreadIndex(Math.max(0, currentSpreadIndex - 1))}
+              disabled={currentSpreadIndex === 0}
+              className="p-1 text-gray-400 hover:text-white disabled:opacity-30">
+
+                    <PrevArrow className="w-4 h-4" />
+                  </button>
+                  
+                  <div data-ev-id="ev_e9ac855e1f" className="flex-1 flex gap-2 overflow-x-auto py-1">
+                    {spreads.map((spread, idx) =>
+                <button data-ev-id="ev_5ad0a1bc88"
+                key={spread.id}
+                onClick={() => setCurrentSpreadIndex(idx)}
+                className={`flex-shrink-0 h-12 rounded border-2 transition-colors overflow-hidden ${
+                idx === currentSpreadIndex ?
+                'border-primary ring-1 ring-primary/50' :
+                'border-gray-600 hover:border-gray-500'}`
+                }
+                style={{ aspectRatio: `${CANVAS_WIDTH} / ${CANVAS_HEIGHT}` }}
+                title={spread.spread_type === 'cover' ?
+                language === 'he' ? 'כריכה' : 'Cover' :
+                `${language === 'he' ? 'פרישה' : 'Spread'} ${idx}`
+                }>
+
+                        <div data-ev-id="ev_e7518be3d0"
+                  className="w-full h-full flex"
+                  style={{ background: spread.canvas_data?.background || '#ffffff' }}>
+
+                          {/* Left page */}
+                          <div data-ev-id="ev_2ab0c9546a" className="w-1/2 h-full border-r border-gray-400/30" />
+                          {/* Right page */}
+                          <div data-ev-id="ev_2e6a2a7816" className="w-1/2 h-full" />
+                        </div>
+                      </button>
+                )}
+                  </div>
+                  
+                  <button data-ev-id="ev_368ca97d4d"
+              onClick={() => setCurrentSpreadIndex(Math.min(spreads.length - 1, currentSpreadIndex + 1))}
+              disabled={currentSpreadIndex === spreads.length - 1}
+              className="p-1 text-gray-400 hover:text-white disabled:opacity-30">
+
+                    <NextArrow className="w-4 h-4" />
+                  </button>
+                </div>
+            }
             </div>
-            <div data-ev-id="ev_03777ef3c3" className="h-8 w-px bg-gray-700" />
-            <div data-ev-id="ev_e91301dd5a" className="flex-1 flex items-center gap-2 overflow-x-auto">
-              <Button variant="ghost" size="sm" onClick={() => setZoom(Math.max(0.2, zoom - 0.1))} className="text-gray-400 p-1"><ZoomOut className="w-4 h-4" /></Button>
-              <span data-ev-id="ev_9d5cc52b9d" className="text-xs text-gray-400 w-10 text-center">{Math.round(zoom * 100)}%</span>
-              <Button variant="ghost" size="sm" onClick={() => setZoom(Math.min(2, zoom + 0.1))} className="text-gray-400 p-1"><ZoomIn className="w-4 h-4" /></Button>
-            </div>
-          </div>
+          }
         </main>
 
         {/* Right Sidebar - Properties */}

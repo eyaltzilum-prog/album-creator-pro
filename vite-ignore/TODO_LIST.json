@@ -1,31 +1,52 @@
 {
-  "summary": "Fix Frame-Photo Masking System",
+  "summary": "Album Creator Pro Redesign - Large Spread Editor + Setup Flow",
   "todos": [
     {
       "id": 1,
-      "description": "Rewrite FrameElementComponent with flat architecture",
+      "description": "Create new setup wizard flow (size, pages, direction, theme, photos, placement)",
       "files": [
-        "src/pages/client/Editor.tsx"
+        "src/pages/client/AlbumSetup.tsx",
+        "src/components/setup/*",
+        "src/lib/themes.ts"
       ],
       "status": "complete"
     },
     {
       "id": 2,
-      "description": "Fix photo drop handlers for proper fill/center",
+      "description": "Build theme system with 8 visual themes and gallery selection",
       "files": [
-        "src/pages/client/Editor.tsx"
+        "src/lib/themes.ts",
+        "src/components/setup/ThemeSelector.tsx"
       ],
       "status": "complete"
     },
     {
       "id": 3,
-      "description": "Test and validate the implementation",
+      "description": "Redesign editor layout - maximize spread canvas, compact perimeter tools",
       "files": [
-        "src/pages/client/Editor.tsx"
+        "src/pages/client/EditorNew.tsx",
+        "src/components/editor/*"
       ],
-      "status": "complete"
+      "status": "active"
+    },
+    {
+      "id": 4,
+      "description": "Implement automatic photo placement with theme layouts",
+      "files": [
+        "src/lib/autoPlacement.ts",
+        "src/pages/client/EditorNew.tsx"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 5,
+      "description": "Polish: bottom filmstrip, RTL support, focus mode, validation",
+      "files": [
+        "src/components/editor/SpreadFilmstrip.tsx"
+      ],
+      "status": "pending"
     }
   ],
-  "createdAt": "2026-03-30T17:10:33.774Z",
-  "updatedAt": "2026-03-30T17:12:16.088Z"
+  "createdAt": "2026-09-22T17:55:50.922Z",
+  "updatedAt": "2026-09-22T17:57:52.094Z"
 }
