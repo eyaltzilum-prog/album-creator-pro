@@ -1348,7 +1348,9 @@ export default function ClientEditor() {
   // UI state
   const [activePanel, setActivePanel] = useState<string>('photos');
   const [activePropertiesTab, setActivePropertiesTab] = useState<'frame' | 'photo' | 'adjustments' | 'typography' | 'effects' | 'transform'>('frame');
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState(0.6); // Start lower than 100% to avoid initial clip
+  const [hasManualZoom, setHasManualZoom] = useState(false); // Track manual zoom changes
+  const [initialFitDone, setInitialFitDone] = useState(false); // Track if initial fit completed
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showAlbumSizeModal, setShowAlbumSizeModal] = useState(false);
   const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
@@ -1396,43 +1398,92 @@ export default function ClientEditor() {
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const stageContainerRef = useRef<HTMLDivElement>(null);
 
-  // Canvas dimensions
-  const getCanvasDimensions = () => {
-    const size = ALBUM_SIZES.find((s) => s.id === selectedAlbumSize) || ALBUM_SIZES[2];
-    const scale = Math.min(2100 / (size.width * 2), 1500 / size.height);
-    return { width: Math.round(size.width * 2 * scale), height: Math.round(size.height * scale) };
-  };
+  // Canvas dimensions - use project settings if available, fallback to selectedAlbumSize
+  const getCanvasDimensions = useCallback(() => {
+    // Try to get size from project settings first
+    const projectSettings = project?.settings as { sizeId?: string; spreadWidth?: number; spreadHeight?: number } | null;
+    let size = ALBUM_SIZES.find((s) => s.id === projectSettings?.sizeId) ||
+               ALBUM_SIZES.find((s) => s.id === selectedAlbumSize) ||
+               ALBUM_SIZES[2];
+    
+    // If project has explicit spread dimensions, use those
+    const spreadW = projectSettings?.spreadWidth || size.spreadWidth;
+    const spreadH = projectSettings?.spreadHeight || size.spreadHeight;
+    
+    // Scale to fit reasonable canvas size (spread = 2 pages side by side)
+    const scale = Math.min(2100 / spreadW, 1500 / spreadH);
+    return { width: Math.round(spreadW * scale), height: Math.round(spreadH * scale) };
+  }, [project, selectedAlbumSize]);
+  
   const { width: CANVAS_WIDTH, height: CANVAS_HEIGHT } = getCanvasDimensions();
   const FOLD_LINE_X = CANVAS_WIDTH / 2;
 
   // Calculate fit-to-viewport zoom
   const calculateFitZoom = useCallback(() => {
-    if (!canvasContainerRef.current) return 1;
+    if (!canvasContainerRef.current) return 0.6;
     const container = canvasContainerRef.current;
-    const padding = 32; // 16px on each side
+    const padding = 48; // 24px on each side for breathing room
     const availableWidth = container.clientWidth - padding;
     const availableHeight = container.clientHeight - padding;
+    if (availableWidth <= 0 || availableHeight <= 0) return 0.6;
     const scaleX = availableWidth / CANVAS_WIDTH;
     const scaleY = availableHeight / CANVAS_HEIGHT;
     return Math.min(scaleX, scaleY, 1.5); // Cap at 150%
   }, [CANVAS_WIDTH, CANVAS_HEIGHT]);
 
-  // Auto-fit on mount and resize
+  // Initial fit after project loads and container is ready
   useEffect(() => {
-    const handleResize = () => {
+    if (loading || !project || initialFitDone) return;
+    
+    // Wait for layout to stabilize then fit
+    const timer = setTimeout(() => {
       const fitZoom = calculateFitZoom();
-      setZoom(fitZoom);
-    };
-    // Initial fit after a short delay to ensure container is measured
-    const timer = setTimeout(handleResize, 100);
-    window.addEventListener('resize', handleResize);
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [calculateFitZoom, leftDrawerOpen, rightPanelOpen, filmstripOpen, focusMode]);
+      if (fitZoom > 0) {
+        setZoom(fitZoom);
+        setInitialFitDone(true);
+      }
+    }, 150);
+    
+    return () => clearTimeout(timer);
+  }, [loading, project, calculateFitZoom, initialFitDone]);
 
-  const fitToViewport = () => setZoom(calculateFitZoom());
+  // ResizeObserver for responsive fit (only when not manually zoomed)
+  useEffect(() => {
+    if (!canvasContainerRef.current || !initialFitDone) return;
+    
+    const observer = new ResizeObserver(() => {
+      if (!hasManualZoom) {
+        const fitZoom = calculateFitZoom();
+        if (fitZoom > 0) setZoom(fitZoom);
+      }
+    });
+    
+    observer.observe(canvasContainerRef.current);
+    return () => observer.disconnect();
+  }, [calculateFitZoom, hasManualZoom, initialFitDone]);
+
+  // Re-fit when panels change (only if not manually zoomed)
+  useEffect(() => {
+    if (!initialFitDone || hasManualZoom) return;
+    const timer = setTimeout(() => {
+      const fitZoom = calculateFitZoom();
+      if (fitZoom > 0) setZoom(fitZoom);
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [leftDrawerOpen, filmstripOpen, focusMode, calculateFitZoom, initialFitDone, hasManualZoom]);
+
+  // Manual zoom change handler
+  const handleManualZoom = (newZoom: number) => {
+    setZoom(newZoom);
+    setHasManualZoom(true);
+  };
+
+  // Fit to viewport (resets manual zoom flag)
+  const fitToViewport = () => {
+    const fitZoom = calculateFitZoom();
+    setZoom(fitZoom);
+    setHasManualZoom(false);
+  };
 
   // Current spread data
   const currentSpread = spreads[currentSpreadIndex];
@@ -2022,16 +2073,16 @@ export default function ClientEditor() {
     });
   };
 
-  // Sidebar panels
+  // Sidebar panels - compact labels for icon rail, full labels for tooltips/drawer
   const sidebarPanels = [
-  { id: 'photos', icon: Image, label: language === 'he' ? 'תמונות' : 'Photos' },
-  { id: 'templates', icon: LayoutTemplate, label: language === 'he' ? 'תבניות' : 'Templates' },
-  { id: 'backgrounds', icon: Palette, label: language === 'he' ? 'רקעים' : 'BG' },
-  { id: 'frames', icon: FrameIcon, label: language === 'he' ? 'מסגרות' : 'Frames' },
-  { id: 'clipart', icon: Scissors, label: language === 'he' ? 'קליפארט' : 'Clipart' },
-  { id: 'stickers', icon: Smile, label: language === 'he' ? 'מדבקות' : 'Stickers' },
-  { id: 'text', icon: Type, label: language === 'he' ? 'טקסט' : 'Text' },
-  { id: 'layers', icon: Layers, label: language === 'he' ? 'שכבות' : 'Layers' }];
+  { id: 'photos', icon: Image, label: language === 'he' ? 'תמונות' : 'Photos', shortLabel: language === 'he' ? 'תמונות' : 'Photos' },
+  { id: 'templates', icon: LayoutTemplate, label: language === 'he' ? 'תבניות' : 'Templates', shortLabel: language === 'he' ? 'תבניות' : 'Layout' },
+  { id: 'backgrounds', icon: Palette, label: language === 'he' ? 'רקעים' : 'Backgrounds', shortLabel: language === 'he' ? 'רקע' : 'BG' },
+  { id: 'frames', icon: FrameIcon, label: language === 'he' ? 'מסגרות' : 'Frames', shortLabel: language === 'he' ? 'מסגרת' : 'Frame' },
+  { id: 'clipart', icon: Scissors, label: language === 'he' ? 'קליפארט' : 'Clipart', shortLabel: language === 'he' ? 'קליפ' : 'Clip' },
+  { id: 'stickers', icon: Smile, label: language === 'he' ? 'מדבקות' : 'Stickers', shortLabel: language === 'he' ? 'מדבקה' : 'Stick' },
+  { id: 'text', icon: Type, label: language === 'he' ? 'טקסט' : 'Text', shortLabel: language === 'he' ? 'טקסט' : 'Text' },
+  { id: 'layers', icon: Layers, label: language === 'he' ? 'שכבות' : 'Layers', shortLabel: language === 'he' ? 'שכבות' : 'Layer' }];
 
 
 
@@ -2094,7 +2145,7 @@ export default function ClientEditor() {
                 title={panel.label}>
 
                     <panel.icon className="w-5 h-5" />
-                    <span data-ev-id="ev_19206e31e5" className="text-[9px] mt-0.5 leading-tight">{panel.label.slice(0, 4)}</span>
+                    <span data-ev-id="ev_19206e31e5" className="text-[9px] mt-0.5 leading-tight truncate max-w-[48px]">{panel.shortLabel}</span>
                   </button>
               )}
               </div>
@@ -2269,9 +2320,9 @@ export default function ClientEditor() {
           <div data-ev-id="ev_0c8caac4e0" ref={canvasContainerRef} onDragOver={handleCanvasDragOver} onDragLeave={() => {setIsOverDropZone(false);setHoverFrameId(null);}} onDrop={handleCanvasDrop} className={`flex-1 overflow-hidden bg-gray-950 flex items-center justify-center relative ${isOverDropZone ? 'ring-2 ring-primary ring-inset' : ''}`}>
             {/* Zoom Controls - Floating */}
             <div data-ev-id="ev_zoom_controls" className="absolute bottom-4 left-4 z-20 flex items-center gap-1 bg-gray-800/90 backdrop-blur rounded-lg px-2 py-1">
-              <button data-ev-id="ev_ecb3eefecd" onClick={() => setZoom(Math.max(0.2, zoom - 0.1))} className="p-1 text-gray-400 hover:text-white"><ZoomOut className="w-4 h-4" /></button>
+              <button data-ev-id="ev_ecb3eefecd" onClick={() => handleManualZoom(Math.max(0.2, zoom - 0.1))} className="p-1 text-gray-400 hover:text-white"><ZoomOut className="w-4 h-4" /></button>
               <span data-ev-id="ev_a8994c9427" className="text-xs text-gray-300 w-12 text-center">{Math.round(zoom * 100)}%</span>
-              <button data-ev-id="ev_c12ad2aca1" onClick={() => setZoom(Math.min(2, zoom + 0.1))} className="p-1 text-gray-400 hover:text-white"><ZoomIn className="w-4 h-4" /></button>
+              <button data-ev-id="ev_c12ad2aca1" onClick={() => handleManualZoom(Math.min(2, zoom + 0.1))} className="p-1 text-gray-400 hover:text-white"><ZoomIn className="w-4 h-4" /></button>
               <span data-ev-id="ev_87b9cd2dfd" className="w-px h-4 bg-gray-600" />
               <button data-ev-id="ev_82c0683a54" onClick={fitToViewport} className="p-1 text-gray-400 hover:text-white" title="Fit"><Maximize className="w-4 h-4" /></button>
             </div>
