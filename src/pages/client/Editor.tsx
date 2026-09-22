@@ -1398,22 +1398,37 @@ export default function ClientEditor() {
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const stageContainerRef = useRef<HTMLDivElement>(null);
 
-  // Canvas dimensions - use project settings if available, fallback to selectedAlbumSize
+  // Canvas dimensions - LEGACY COMPATIBILITY CRITICAL
+  // The canvas coordinate system must match what was used when artwork was created.
+  // Legacy albums used hardcoded 2100x1050. New albums with explicit canvasWidth/canvasHeight
+  // use their specified dimensions. NEVER change stored geometry for existing albums.
   const getCanvasDimensions = useCallback(() => {
-    // Try to get size from project settings first
-    const projectSettings = project?.settings as { sizeId?: string; spreadWidth?: number; spreadHeight?: number } | null;
-    let size = ALBUM_SIZES.find((s) => s.id === projectSettings?.sizeId) ||
-               ALBUM_SIZES.find((s) => s.id === selectedAlbumSize) ||
-               ALBUM_SIZES[2];
+    // ORIGINAL LEGACY CANVAS DIMENSIONS - DO NOT CHANGE
+    // All existing albums were created with this coordinate system
+    const LEGACY_CANVAS_WIDTH = 2100;
+    const LEGACY_CANVAS_HEIGHT = 1050;
     
-    // If project has explicit spread dimensions, use those
-    const spreadW = projectSettings?.spreadWidth || size.spreadWidth;
-    const spreadH = projectSettings?.spreadHeight || size.spreadHeight;
+    const projectSettings = project?.settings as { 
+      canvasWidth?: number; 
+      canvasHeight?: number;
+    } | null;
     
-    // Scale to fit reasonable canvas size (spread = 2 pages side by side)
-    const scale = Math.min(2100 / spreadW, 1500 / spreadH);
-    return { width: Math.round(spreadW * scale), height: Math.round(spreadH * scale) };
-  }, [project, selectedAlbumSize]);
+    // ONLY use explicit canvasWidth/canvasHeight if set (new albums with new schema)
+    if (projectSettings?.canvasWidth && projectSettings?.canvasHeight &&
+        projectSettings.canvasWidth > 0 && projectSettings.canvasHeight > 0 &&
+        Number.isFinite(projectSettings.canvasWidth) && Number.isFinite(projectSettings.canvasHeight)) {
+      return {
+        width: projectSettings.canvasWidth,
+        height: projectSettings.canvasHeight
+      };
+    }
+    
+    // For ALL legacy albums, use the original 2100x1050 coordinate system
+    return {
+      width: LEGACY_CANVAS_WIDTH,
+      height: LEGACY_CANVAS_HEIGHT
+    };
+  }, [project]);
   
   const { width: CANVAS_WIDTH, height: CANVAS_HEIGHT } = getCanvasDimensions();
   const FOLD_LINE_X = CANVAS_WIDTH / 2;
@@ -1425,10 +1440,12 @@ export default function ClientEditor() {
     const padding = 48; // 24px on each side for breathing room
     const availableWidth = container.clientWidth - padding;
     const availableHeight = container.clientHeight - padding;
-    if (availableWidth <= 0 || availableHeight <= 0) return 0.6;
+    // Validate all values are positive
+    if (availableWidth <= 0 || availableHeight <= 0 || CANVAS_WIDTH <= 0 || CANVAS_HEIGHT <= 0) return 0.6;
     const scaleX = availableWidth / CANVAS_WIDTH;
     const scaleY = availableHeight / CANVAS_HEIGHT;
-    return Math.min(scaleX, scaleY, 1.5); // Cap at 150%
+    const result = Math.min(scaleX, scaleY, 1.5); // Cap at 150%
+    return Number.isFinite(result) && result > 0 ? result : 0.6;
   }, [CANVAS_WIDTH, CANVAS_HEIGHT]);
 
   // Initial fit after project loads and container is ready
@@ -2145,7 +2162,6 @@ export default function ClientEditor() {
                 title={panel.label}>
 
                     <panel.icon className="w-5 h-5" />
-                    <span data-ev-id="ev_19206e31e5" className="text-[9px] mt-0.5 leading-tight truncate max-w-[48px]">{panel.shortLabel}</span>
                   </button>
               )}
               </div>

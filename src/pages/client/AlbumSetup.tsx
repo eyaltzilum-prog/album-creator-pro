@@ -32,12 +32,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
 
 const STEPS = [
-{ id: 'size', icon: BookOpen, labelKey: 'album_size' },
-{ id: 'pages', icon: Layers, labelKey: 'page_count' },
-{ id: 'direction', icon: ArrowLeftRight, labelKey: 'reading_direction' },
-{ id: 'theme', icon: Palette, labelKey: 'theme' },
-{ id: 'photos', icon: Image, labelKey: 'photos' },
-{ id: 'placement', icon: Wand2, labelKey: 'placement_mode' }];
+{ id: 'size', icon: BookOpen, label: { he: 'גודל', en: 'Size' } },
+{ id: 'pages', icon: Layers, label: { he: 'עמודים', en: 'Pages' } },
+{ id: 'direction', icon: ArrowLeftRight, label: { he: 'כיוון', en: 'Direction' } },
+{ id: 'theme', icon: Palette, label: { he: 'עיצוב', en: 'Theme' } },
+{ id: 'photos', icon: Image, label: { he: 'תמונות', en: 'Photos' } },
+{ id: 'placement', icon: Wand2, label: { he: 'סידור', en: 'Placement' } }];
 
 
 export default function AlbumSetup() {
@@ -711,7 +711,7 @@ export default function AlbumSetup() {
                 index === currentStep ? 'text-primary' : 'text-gray-500'}`
                 }>
 
-                    {t(step.labelKey) || step.labelKey}
+                    {language === 'he' ? step.label.he : step.label.en}
                   </span>
                 </button>
                 {index < STEPS.length - 1 &&
