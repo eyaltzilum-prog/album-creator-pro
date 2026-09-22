@@ -1,52 +1,37 @@
 {
-  "summary": "Album Creator Pro Redesign - Large Spread Editor + Setup Flow",
+  "summary": "Comprehensive light theme redesign of the customer editor",
   "todos": [
     {
       "id": 1,
-      "description": "Create new setup wizard flow (size, pages, direction, theme, photos, placement)",
-      "files": [
-        "src/pages/client/AlbumSetup.tsx",
-        "src/components/setup/*",
-        "src/lib/themes.ts"
-      ],
+      "description": "Transform header, main container, and loading states to light theme",
+      "files": [],
       "status": "complete"
     },
     {
       "id": 2,
-      "description": "Build theme system with 8 visual themes and gallery selection",
-      "files": [
-        "src/lib/themes.ts",
-        "src/components/setup/ThemeSelector.tsx"
-      ],
+      "description": "Redesign tool rail with icons + labels, and library drawer",
+      "files": [],
       "status": "complete"
     },
     {
       "id": 3,
-      "description": "Redesign editor layout - maximize spread canvas, compact perimeter tools",
-      "files": [
-        "src/pages/client/EditorNew.tsx",
-        "src/components/editor/*"
-      ],
+      "description": "Light canvas stage with paper styling and filmstrip improvements",
+      "files": [],
       "status": "complete"
     },
     {
       "id": 4,
-      "description": "Implement automatic photo placement with theme layouts",
-      "files": [
-        "src/lib/autoPlacement.ts",
-        "src/pages/client/EditorNew.tsx"
-      ],
+      "description": "Inspector panels and all control styling to light theme",
+      "files": [],
       "status": "active"
     },
     {
       "id": 5,
-      "description": "Polish: bottom filmstrip, RTL support, focus mode, validation",
-      "files": [
-        "src/components/editor/SpreadFilmstrip.tsx"
-      ],
+      "description": "Validate at 1366x768 and 1920x1080, check legacy canvas 2100x1050",
+      "files": [],
       "status": "pending"
     }
   ],
-  "createdAt": "2026-09-22T17:55:50.922Z",
-  "updatedAt": "2026-09-22T18:01:26.052Z"
+  "createdAt": "2026-09-22T18:23:33.321Z",
+  "updatedAt": "2026-09-22T18:27:12.178Z"
 }

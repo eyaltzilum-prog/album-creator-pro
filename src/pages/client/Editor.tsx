@@ -1306,7 +1306,7 @@ export default function ClientEditor() {
 
   // Get navigation state for auto-placement
   const navigationState = location.state as {
-    setupData?: { themeId?: string; photos?: Array<{ dataUrl: string }> };
+    setupData?: {themeId?: string;photos?: Array<{dataUrl: string;}>;};
     isNewAlbum?: boolean;
     autoPlace?: boolean;
   } | null;
@@ -1407,29 +1407,29 @@ export default function ClientEditor() {
     // All existing albums were created with this coordinate system
     const LEGACY_CANVAS_WIDTH = 2100;
     const LEGACY_CANVAS_HEIGHT = 1050;
-    
-    const projectSettings = project?.settings as { 
-      canvasWidth?: number; 
+
+    const projectSettings = project?.settings as {
+      canvasWidth?: number;
       canvasHeight?: number;
     } | null;
-    
+
     // ONLY use explicit canvasWidth/canvasHeight if set (new albums with new schema)
     if (projectSettings?.canvasWidth && projectSettings?.canvasHeight &&
-        projectSettings.canvasWidth > 0 && projectSettings.canvasHeight > 0 &&
-        Number.isFinite(projectSettings.canvasWidth) && Number.isFinite(projectSettings.canvasHeight)) {
+    projectSettings.canvasWidth > 0 && projectSettings.canvasHeight > 0 &&
+    Number.isFinite(projectSettings.canvasWidth) && Number.isFinite(projectSettings.canvasHeight)) {
       return {
         width: projectSettings.canvasWidth,
         height: projectSettings.canvasHeight
       };
     }
-    
+
     // For ALL legacy albums, use the original 2100x1050 coordinate system
     return {
       width: LEGACY_CANVAS_WIDTH,
       height: LEGACY_CANVAS_HEIGHT
     };
   }, [project]);
-  
+
   const { width: CANVAS_WIDTH, height: CANVAS_HEIGHT } = getCanvasDimensions();
   const FOLD_LINE_X = CANVAS_WIDTH / 2;
 
@@ -1451,7 +1451,7 @@ export default function ClientEditor() {
   // Initial fit after project loads and container is ready
   useEffect(() => {
     if (loading || !project || initialFitDone) return;
-    
+
     // Wait for layout to stabilize then fit
     const timer = setTimeout(() => {
       const fitZoom = calculateFitZoom();
@@ -1460,21 +1460,21 @@ export default function ClientEditor() {
         setInitialFitDone(true);
       }
     }, 150);
-    
+
     return () => clearTimeout(timer);
   }, [loading, project, calculateFitZoom, initialFitDone]);
 
   // ResizeObserver for responsive fit (only when not manually zoomed)
   useEffect(() => {
     if (!canvasContainerRef.current || !initialFitDone) return;
-    
+
     const observer = new ResizeObserver(() => {
       if (!hasManualZoom) {
         const fitZoom = calculateFitZoom();
         if (fitZoom > 0) setZoom(fitZoom);
       }
     });
-    
+
     observer.observe(canvasContainerRef.current);
     return () => observer.disconnect();
   }, [calculateFitZoom, hasManualZoom, initialFitDone]);
@@ -1572,21 +1572,21 @@ export default function ClientEditor() {
   // Auto-placement effect - runs once when new album with autoPlace flag
   useEffect(() => {
     if (
-      !loading &&
-      !autoPlacementDone &&
-      navigationState?.autoPlace &&
-      navigationState?.isNewAlbum &&
-      spreads.length > 0 &&
-      project
-    ) {
+    !loading &&
+    !autoPlacementDone &&
+    navigationState?.autoPlace &&
+    navigationState?.isNewAlbum &&
+    spreads.length > 0 &&
+    project)
+    {
       // Get theme from project settings or navigation state
-      const themeId = (project.settings as { themeId?: string })?.themeId || navigationState?.setupData?.themeId;
+      const themeId = (project.settings as {themeId?: string;})?.themeId || navigationState?.setupData?.themeId;
       const theme = themeId ? getThemeById(themeId) : null;
 
       // Get photos from uploaded photos or navigation state
-      const photosToPlace = uploadedPhotos.length > 0
-        ? uploadedPhotos
-        : (navigationState?.setupData?.photos?.map(p => p.dataUrl) || []);
+      const photosToPlace = uploadedPhotos.length > 0 ?
+      uploadedPhotos :
+      navigationState?.setupData?.photos?.map((p) => p.dataUrl) || [];
 
       if (photosToPlace.length > 0) {
         // Run auto-placement
@@ -1611,10 +1611,10 @@ export default function ClientEditor() {
         // Save to database
         if (supabase) {
           updatedSpreads.forEach(async (spread) => {
-            await supabase
-              .from('spreads')
-              .update({ canvas_data: spread.canvas_data })
-              .eq('id', spread.id);
+            await supabase.
+            from('spreads').
+            update({ canvas_data: spread.canvas_data }).
+            eq('id', spread.id);
           });
         }
       }
@@ -2106,32 +2106,32 @@ export default function ClientEditor() {
   const templatesByCount = getTemplatesByCount();
   const templateCounts = Object.keys(templatesByCount).map(Number).sort((a, b) => a - b);
 
-  if (loading) return <div data-ev-id="ev_d99ba1c85c" className="h-screen flex items-center justify-center bg-gray-900"><Loader2 className="w-8 h-8 animate-spin text-white" /></div>;
+  if (loading) return <div data-ev-id="ev_d99ba1c85c" className="h-screen flex items-center justify-center bg-[#f2f4f5]"><Loader2 className="w-8 h-8 animate-spin text-[#2daea8]" /></div>;
 
   const PrevArrow = isRTL ? ChevronRight : ChevronLeft;
   const NextArrow = isRTL ? ChevronLeft : ChevronRight;
 
   return (
-    <div data-ev-id="ev_429acfd919" className="h-[100dvh] flex flex-col bg-gray-900 overflow-hidden">
+    <div data-ev-id="ev_429acfd919" className="h-[100dvh] flex flex-col bg-[#f2f4f5] overflow-hidden">
       {/* Compact Top Toolbar - 56px */}
-      <header data-ev-id="ev_ba397c437d" className="h-14 bg-gray-800 border-b border-gray-700 px-3 flex items-center justify-between flex-shrink-0">
+      <header data-ev-id="ev_ba397c437d" className="h-14 bg-white border-b border-gray-200 px-4 flex items-center justify-between flex-shrink-0 shadow-sm">
         <div data-ev-id="ev_476e159c84" className="flex items-center gap-2">
-          <button data-ev-id="ev_c2d9dcdd88" onClick={() => navigate('/projects')} className="flex items-center gap-1 text-gray-300 hover:text-white text-sm">
+          <button data-ev-id="ev_c2d9dcdd88" onClick={() => navigate('/projects')} className="flex items-center gap-1.5 text-gray-600 hover:text-gray-900 text-sm font-medium">
             {isRTL ? <ArrowRight className="w-5 h-5" /> : <ArrowLeft className="w-5 h-5" />}
             <span data-ev-id="ev_bb7222526a">{t('back')}</span>
           </button>
-          <span data-ev-id="ev_82fa8dc3be" className="text-gray-600">|</span>
-          <span data-ev-id="ev_5c62f73c64" className="text-white font-medium truncate max-w-[200px]">{project?.name}</span>
+          <span data-ev-id="ev_82fa8dc3be" className="text-gray-300">|</span>
+          <span data-ev-id="ev_5c62f73c64" className="text-gray-800 font-semibold truncate max-w-[200px]">{project?.name}</span>
         </div>
         <div data-ev-id="ev_3bc3d4df22" className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" onClick={() => setFocusMode(!focusMode)} className={`px-2 ${focusMode ? 'text-primary' : 'text-gray-400'}`} title={language === 'he' ? 'מצב מיקוד' : 'Focus'}><Focus className="w-4 h-4" /></Button>
-          <span data-ev-id="ev_div1" className="w-px h-5 bg-gray-700" />
-          <Button variant="ghost" size="sm" onClick={() => setSnappingEnabled(!snappingEnabled)} className={`px-2 ${snappingEnabled ? 'text-primary' : 'text-gray-400'}`}><Magnet className="w-4 h-4" /></Button>
-          <Button variant="ghost" size="sm" onClick={() => setGridEnabled(!gridEnabled)} className={`px-2 ${gridEnabled ? 'text-primary' : 'text-gray-400'}`}><Grid3X3 className="w-4 h-4" /></Button>
-          <span data-ev-id="ev_div2" className="w-px h-5 bg-gray-700" />
-          <Button variant="ghost" size="sm" onClick={() => setShowPreview(true)} className="text-gray-400 px-2"><Eye className="w-4 h-4" /></Button>
-          <Button variant="secondary" size="sm" onClick={saveProject} disabled={saving || !canEdit} className="px-3">{saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}</Button>
-          {canEdit && <Button size="sm" onClick={() => setShowSubmitModal(true)} className="px-3"><Send className="w-4 h-4" /></Button>}
+          <Button variant="ghost" size="sm" onClick={() => setFocusMode(!focusMode)} className={`px-2 ${focusMode ? 'text-[#2daea8]' : 'text-gray-500'} hover:text-[#2daea8] hover:bg-gray-100`} title={language === 'he' ? 'מצב מיקוד' : 'Focus'}><Focus className="w-4 h-4" /></Button>
+          <span data-ev-id="ev_div1" className="w-px h-5 bg-gray-200" />
+          <Button variant="ghost" size="sm" onClick={() => setSnappingEnabled(!snappingEnabled)} className={`px-2 ${snappingEnabled ? 'text-[#2daea8]' : 'text-gray-500'} hover:text-[#2daea8] hover:bg-gray-100`} title={language === 'he' ? 'הצמדה' : 'Snap'}><Magnet className="w-4 h-4" /></Button>
+          <Button variant="ghost" size="sm" onClick={() => setGridEnabled(!gridEnabled)} className={`px-2 ${gridEnabled ? 'text-[#2daea8]' : 'text-gray-500'} hover:text-[#2daea8] hover:bg-gray-100`} title={language === 'he' ? 'רשת' : 'Grid'}><Grid3X3 className="w-4 h-4" /></Button>
+          <span data-ev-id="ev_div2" className="w-px h-5 bg-gray-200" />
+          <Button variant="ghost" size="sm" onClick={() => setShowPreview(true)} className="text-gray-500 px-2 hover:text-[#2daea8] hover:bg-gray-100 gap-1"><Eye className="w-4 h-4" /><span data-ev-id="ev_16b0744e38" className="text-xs hidden sm:inline">{language === 'he' ? 'תצוגה' : 'Preview'}</span></Button>
+          <Button variant="secondary" size="sm" onClick={saveProject} disabled={saving || !canEdit} className="px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 gap-1">{saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4" /><span data-ev-id="ev_963873a043" className="text-xs hidden sm:inline">{language === 'he' ? 'שמור' : 'Save'}</span></>}</Button>
+          {canEdit && <Button size="sm" onClick={() => setShowSubmitModal(true)} className="px-3 bg-[#2daea8] hover:bg-[#259691] text-white gap-1"><Send className="w-4 h-4" /><span data-ev-id="ev_190194268d" className="text-xs hidden sm:inline">{language === 'he' ? 'שלח' : 'Submit'}</span></Button>}
         </div>
       </header>
 
@@ -2139,9 +2139,9 @@ export default function ClientEditor() {
         {/* Left Icon Rail + Expandable Drawer */}
         {!focusMode &&
         <div data-ev-id="ev_left_rail_container" className={`flex ${isRTL ? 'order-last flex-row-reverse' : 'flex-row'}`}>
-            {/* Narrow Icon Rail - 56px */}
-            <aside data-ev-id="ev_left_rail" className={`w-14 bg-gray-800 border-${isRTL ? 'l' : 'r'} border-gray-700 flex flex-col py-2`}>
-              <div data-ev-id="ev_rail_icons" className="flex flex-col gap-1 px-2">
+            {/* Tool Rail - 68px with icons and labels */}
+            <aside data-ev-id="ev_left_rail" className={`w-[68px] bg-white border-${isRTL ? 'l' : 'r'} border-gray-200 flex flex-col py-2 shadow-sm`}>
+              <div data-ev-id="ev_rail_icons" className="flex flex-col gap-0.5 px-1">
                 {sidebarPanels.map((panel) =>
               <button
                 data-ev-id="ev_rail_btn"
@@ -2154,54 +2154,57 @@ export default function ClientEditor() {
                     setLeftDrawerOpen(true);
                   }
                 }}
-                className={`p-2 rounded-lg transition-colors flex flex-col items-center justify-center ${
+                className={`py-2 px-1 rounded-lg transition-colors flex flex-col items-center justify-center gap-1 ${
                 activePanel === panel.id && leftDrawerOpen ?
-                'bg-primary text-white' :
-                'text-gray-400 hover:bg-gray-700 hover:text-white'}`
+                'bg-[#e8f7f6] text-[#2daea8]' :
+                'text-gray-500 hover:bg-gray-100 hover:text-gray-700'}`
                 }
                 title={panel.label}>
 
                     <panel.icon className="w-5 h-5" />
+                    <span data-ev-id="ev_e09aaeca23" className="text-[10px] leading-tight font-medium truncate max-w-full">{panel.shortLabel}</span>
                   </button>
               )}
               </div>
             </aside>
             
-            {/* Expandable Drawer - 240px */}
+            {/* Expandable Drawer - 248px */}
             {leftDrawerOpen &&
-          <aside data-ev-id="ev_left_drawer" className={`w-60 bg-gray-800 border-${isRTL ? 'l' : 'r'} border-gray-700 flex flex-col`}>
-                <div data-ev-id="ev_drawer_header" className="h-10 px-3 flex items-center justify-between border-b border-gray-700">
-                  <span data-ev-id="ev_c4bce0997b" className="text-sm font-medium text-white">{sidebarPanels.find((p) => p.id === activePanel)?.label}</span>
-                  <button data-ev-id="ev_7c4df16039" onClick={() => setLeftDrawerOpen(false)} className="p-1 text-gray-400 hover:text-white rounded">
+          <aside data-ev-id="ev_left_drawer" className={`w-62 bg-white border-${isRTL ? 'l' : 'r'} border-gray-200 flex flex-col shadow-sm`}>
+                <div data-ev-id="ev_drawer_header" className="h-11 px-3 flex items-center justify-between border-b border-gray-200">
+                  <span data-ev-id="ev_c4bce0997b" className="text-sm font-semibold text-gray-800">{sidebarPanels.find((p) => p.id === activePanel)?.label}</span>
+                  <button data-ev-id="ev_7c4df16039" onClick={() => setLeftDrawerOpen(false)} className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded">
                     <ChevronLeft className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} />
                   </button>
                 </div>
-                <div data-ev-id="ev_sidebar_content" className="flex-1 overflow-y-auto p-3">
+                <div data-ev-id="ev_sidebar_content" className="flex-1 overflow-y-auto p-3 bg-white">
             {activePanel === 'photos' &&
               <div data-ev-id="ev_photos_panel" className="flex flex-col gap-4">
                 <input data-ev-id="ev_34ba1bf4a1" ref={fileInputRef} type="file" multiple accept="image/*" onChange={handlePhotoUpload} className="hidden" />
-                <Button onClick={() => fileInputRef.current?.click()} className="w-full"><Upload className="w-4 h-4 mr-2" />{language === 'he' ? 'העלה תמונות' : 'Upload Photos'}</Button>
+                <Button onClick={() => fileInputRef.current?.click()} className="w-full bg-[#2daea8] hover:bg-[#259691] text-white"><Upload className="w-4 h-4 mr-2" />{language === 'he' ? 'הוסף תמונות' : 'Add Photos'}</Button>
+                {uploadedPhotos.length > 0 && <p data-ev-id="ev_112de63edc" className="text-xs text-gray-500">{uploadedPhotos.length} {language === 'he' ? 'תמונות' : 'photos'}</p>}
                 <div data-ev-id="ev_photos_grid" className="grid grid-cols-2 gap-2">
                   {uploadedPhotos.map((photo, i) =>
-                  <motion.button data-ev-id="ev_d8d35a7b5b" key={i} draggable onDragStart={(e) => handlePhotoDragStart(e as any, photo)} onDragEnd={handlePhotoDragEnd} whileHover={{ scale: 1.03 }} onClick={() => addPhotoToCanvas(photo)} className={`aspect-square rounded-lg overflow-hidden border-2 cursor-grab ${draggedPhotoUrl === photo ? 'border-primary opacity-50' : 'border-transparent hover:border-primary'}`}>
+                  <motion.button data-ev-id="ev_d8d35a7b5b" key={i} draggable onDragStart={(e) => handlePhotoDragStart(e as any, photo)} onDragEnd={handlePhotoDragEnd} whileHover={{ scale: 1.02 }} onClick={() => addPhotoToCanvas(photo)} className={`aspect-square rounded-lg overflow-hidden border-2 cursor-grab shadow-sm ${draggedPhotoUrl === photo ? 'border-[#2daea8] opacity-50' : 'border-gray-200 hover:border-[#2daea8]'}`}>
                       <img data-ev-id="ev_c7a7495f6e" src={photo} alt="" className="w-full h-full object-cover" />
                     </motion.button>
                   )}
                 </div>
+                {uploadedPhotos.length === 0 && <div data-ev-id="ev_aa27c3cc71" className="text-center py-8 text-gray-400"><Image className="w-10 h-10 mx-auto mb-2 opacity-50" /><p data-ev-id="ev_b2231d4df7" className="text-sm">{language === 'he' ? 'גרור תמונות לכאן' : 'Drag photos here'}</p></div>}
               </div>
               }
             {activePanel === 'templates' &&
               <div data-ev-id="ev_templates_panel" className="flex flex-col gap-4">
                 <div data-ev-id="ev_template_tabs" className="flex gap-1 flex-wrap">
                   {templateCounts.map((count) =>
-                  <button data-ev-id="ev_42cb4e6cd1" key={count} onClick={() => setSelectedTemplateCategory(count)} className={`px-3 py-1 rounded text-xs ${selectedTemplateCategory === count ? 'bg-primary text-white' : 'bg-gray-700 text-gray-400'}`}>{count}</button>
+                  <button data-ev-id="ev_42cb4e6cd1" key={count} onClick={() => setSelectedTemplateCategory(count)} className={`px-3 py-1.5 rounded-full text-xs font-medium ${selectedTemplateCategory === count ? 'bg-[#2daea8] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>{count} {language === 'he' ? 'תמונות' : 'photos'}</button>
                   )}
                 </div>
                 <div data-ev-id="ev_template_grid" className="grid grid-cols-2 gap-2">
                   {(templatesByCount[selectedTemplateCategory] || []).map((template, i) =>
-                  <button data-ev-id="ev_c430d42e1f" key={i} onClick={() => applyTemplate(template)} className="aspect-video bg-gray-700 rounded-lg p-2 hover:bg-gray-600 relative">
+                  <button data-ev-id="ev_c430d42e1f" key={i} onClick={() => applyTemplate(template)} className="aspect-video bg-gray-50 rounded-lg p-2 hover:bg-gray-100 border border-gray-200 hover:border-[#2daea8] relative transition-colors">
                       {template.frames.map((frame, fi) =>
-                    <div data-ev-id="ev_073508ecdc" key={fi} className="absolute bg-gray-500 border border-gray-400" style={{ left: `${frame.x}%`, top: `${frame.y}%`, width: `${frame.width}%`, height: `${frame.height}%` }} />
+                    <div data-ev-id="ev_073508ecdc" key={fi} className="absolute bg-[#2daea8]/20 border border-[#2daea8]/40" style={{ left: `${frame.x}%`, top: `${frame.y}%`, width: `${frame.width}%`, height: `${frame.height}%` }} />
                     )}
                     </button>
                   )}
@@ -2219,14 +2222,14 @@ export default function ClientEditor() {
                   value={bgSearchQuery}
                   onChange={(e) => setBgSearchQuery(e.target.value)}
                   placeholder={language === 'he' ? 'חיפוש רקעים...' : 'Search backgrounds...'}
-                  className="w-full bg-gray-700 border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm text-white placeholder-gray-400" />
+                  className="w-full bg-gray-50 border border-gray-200 rounded-lg pl-10 pr-4 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-[#2daea8] focus:ring-1 focus:ring-[#2daea8] outline-none" />
 
                 </div>
                 {/* Category tabs */}
                 <div data-ev-id="ev_8f8eef1ee1" className="flex gap-1 flex-wrap">
-                  <button data-ev-id="ev_da5d4055d3" onClick={() => setSelectedBgCategory('all')} className={`px-3 py-1 rounded text-xs ${selectedBgCategory === 'all' ? 'bg-primary text-white' : 'bg-gray-700 text-gray-400'}`}>{language === 'he' ? 'הכל' : 'All'}</button>
+                  <button data-ev-id="ev_da5d4055d3" onClick={() => setSelectedBgCategory('all')} className={`px-3 py-1.5 rounded-full text-xs font-medium ${selectedBgCategory === 'all' ? 'bg-[#2daea8] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>{language === 'he' ? 'הכל' : 'All'}</button>
                   {Object.keys(backgroundsByCategory).map((cat) =>
-                  <button data-ev-id="ev_b0f38e4723" key={cat} onClick={() => setSelectedBgCategory(cat)} className={`px-3 py-1 rounded text-xs ${selectedBgCategory === cat ? 'bg-primary text-white' : 'bg-gray-700 text-gray-400'}`}>{cat}</button>
+                  <button data-ev-id="ev_b0f38e4723" key={cat} onClick={() => setSelectedBgCategory(cat)} className={`px-3 py-1.5 rounded-full text-xs font-medium ${selectedBgCategory === cat ? 'bg-[#2daea8] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>{cat}</button>
                   )}
                 </div>
                 {/* Backgrounds grid */}
@@ -2237,9 +2240,9 @@ export default function ClientEditor() {
                   map((bg) =>
                   <motion.button data-ev-id="ev_e4b52943b3"
                   key={bg.id}
-                  whileHover={{ scale: 1.03 }}
+                  whileHover={{ scale: 1.02 }}
                   onClick={() => setBackgroundFromAsset(bg)}
-                  className="aspect-square rounded-lg overflow-hidden border-2 border-transparent hover:border-primary"
+                  className="aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-[#2daea8] shadow-sm"
                   title={bg.name}>
 
                       {isColorBackground(bg) ?
@@ -2250,8 +2253,8 @@ export default function ClientEditor() {
                     </motion.button>
                   )}
                 </div>
-                {assetsLoading && <div data-ev-id="ev_a8dd1182fc" className="flex justify-center py-4"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>}
-                {!assetsLoading && backgrounds.length === 0 && <p data-ev-id="ev_8afbbd556b" className="text-center text-gray-500 text-sm">{language === 'he' ? 'אין רקעים זמינים' : 'No backgrounds available'}</p>}
+                {assetsLoading && <div data-ev-id="ev_a8dd1182fc" className="flex justify-center py-4"><Loader2 className="w-6 h-6 animate-spin text-[#2daea8]" /></div>}
+                {!assetsLoading && backgrounds.length === 0 && <p data-ev-id="ev_8afbbd556b" className="text-center text-gray-400 text-sm py-8">{language === 'he' ? 'אין רקעים זמינים' : 'No backgrounds available'}</p>}
               </div>
               }
             {/* Frames Panel */}
@@ -2265,19 +2268,19 @@ export default function ClientEditor() {
                   value={frameSearchQuery}
                   onChange={(e) => setFrameSearchQuery(e.target.value)}
                   placeholder={language === 'he' ? 'חיפוש מסגרות...' : 'Search frames...'}
-                  className="w-full bg-gray-700 border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm text-white placeholder-gray-400" />
+                  className="w-full bg-gray-50 border border-gray-200 rounded-lg pl-10 pr-4 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-[#2daea8] focus:ring-1 focus:ring-[#2daea8] outline-none" />
 
                 </div>
                 {/* Quick add frame shapes */}
                 <div data-ev-id="ev_0915ec2963" className="flex flex-wrap gap-2">
-                  <button data-ev-id="ev_c2ad018886" onClick={() => addFrame(null, CANVAS_WIDTH / 2 - 100, CANVAS_HEIGHT / 2 - 75, 200, 150)} className="p-3 bg-gray-700 hover:bg-gray-600 rounded-lg" title={language === 'he' ? 'מלבן' : 'Rectangle'}>
-                    <Square className="w-5 h-5 text-white" />
+                  <button data-ev-id="ev_c2ad018886" onClick={() => addFrame(null, CANVAS_WIDTH / 2 - 100, CANVAS_HEIGHT / 2 - 75, 200, 150)} className="p-3 bg-gray-100 hover:bg-gray-200 rounded-lg border border-gray-200" title={language === 'he' ? 'מלבן' : 'Rectangle'}>
+                    <Square className="w-5 h-5 text-gray-600" />
                   </button>
-                  <button data-ev-id="ev_00dc7c301c" onClick={() => {const frameId = addFrame(null, CANVAS_WIDTH / 2 - 75, CANVAS_HEIGHT / 2 - 75, 150, 150);if (frameId) updateElement(frameId, { shape: 'circle' });}} className="p-3 bg-gray-700 hover:bg-gray-600 rounded-lg" title={language === 'he' ? 'עיגול' : 'Circle'}>
-                    <CircleIcon className="w-5 h-5 text-white" />
+                  <button data-ev-id="ev_00dc7c301c" onClick={() => {const frameId = addFrame(null, CANVAS_WIDTH / 2 - 75, CANVAS_HEIGHT / 2 - 75, 150, 150);if (frameId) updateElement(frameId, { shape: 'circle' });}} className="p-3 bg-gray-100 hover:bg-gray-200 rounded-lg border border-gray-200" title={language === 'he' ? 'עיגול' : 'Circle'}>
+                    <CircleIcon className="w-5 h-5 text-gray-600" />
                   </button>
-                  <button data-ev-id="ev_eace3ed4a7" onClick={() => {const frameId = addFrame(null, CANVAS_WIDTH / 2 - 75, CANVAS_HEIGHT / 2 - 75, 150, 150);if (frameId) updateElement(frameId, { shape: 'heart' });}} className="p-3 bg-gray-700 hover:bg-gray-600 rounded-lg" title={language === 'he' ? 'לב' : 'Heart'}>
-                    <Heart className="w-5 h-5 text-white" />
+                  <button data-ev-id="ev_eace3ed4a7" onClick={() => {const frameId = addFrame(null, CANVAS_WIDTH / 2 - 75, CANVAS_HEIGHT / 2 - 75, 150, 150);if (frameId) updateElement(frameId, { shape: 'heart' });}} className="p-3 bg-gray-100 hover:bg-gray-200 rounded-lg border border-gray-200" title={language === 'he' ? 'לב' : 'Heart'}>
+                    <Heart className="w-5 h-5 text-gray-600" />
                   </button>
                 </div>
                 {/* Admin frames grid */}
@@ -2287,42 +2290,43 @@ export default function ClientEditor() {
                   map((frame) =>
                   <motion.button data-ev-id="ev_36aa8c0576"
                   key={frame.id}
-                  whileHover={{ scale: 1.03 }}
+                  whileHover={{ scale: 1.02 }}
                   onClick={() => addAdminFrameToCanvas(frame)}
-                  className="aspect-square rounded-lg overflow-hidden border-2 border-transparent hover:border-primary bg-gray-700 p-2"
+                  className="aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-[#2daea8] bg-gray-50 p-2 shadow-sm"
                   title={frame.name}>
 
                       {frame.thumbnail_url || frame.file_url ?
                     <img data-ev-id="ev_96a048727b" src={frame.thumbnail_url || frame.file_url} alt={frame.name} className="w-full h-full object-contain" /> :
 
                     <div data-ev-id="ev_525abccbb3" className="w-full h-full flex items-center justify-center">
-                          <FrameIcon className="w-8 h-8 text-gray-500" />
+                          <FrameIcon className="w-8 h-8 text-gray-400" />
                         </div>
                     }
                     </motion.button>
                   )}
                 </div>
-                {assetsLoading && <div data-ev-id="ev_e64c3c0765" className="flex justify-center py-4"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>}
-                {!assetsLoading && globalFrames.length === 0 && <p data-ev-id="ev_c17aba11d6" className="text-center text-gray-500 text-sm">{language === 'he' ? 'אין מסגרות זמינות' : 'No frames available'}</p>}
+                {assetsLoading && <div data-ev-id="ev_e64c3c0765" className="flex justify-center py-4"><Loader2 className="w-6 h-6 animate-spin text-[#2daea8]" /></div>}
+                {!assetsLoading && globalFrames.length === 0 && <p data-ev-id="ev_c17aba11d6" className="text-center text-gray-400 text-sm py-8">{language === 'he' ? 'אין מסגרות זמינות' : 'No frames available'}</p>}
               </div>
               }
             {activePanel === 'text' &&
               <div data-ev-id="ev_76cbb5202f" className="flex flex-col gap-4">
-                <Button onClick={addTextElement} className="w-full"><Type className="w-4 h-4 mr-2" />{language === 'he' ? 'הוסף טקסט' : 'Add Text'}</Button>
+                <Button onClick={addTextElement} className="w-full bg-[#2daea8] hover:bg-[#259691] text-white"><Type className="w-4 h-4 mr-2" />{language === 'he' ? 'הוסף טקסט' : 'Add Text'}</Button>
+                <p data-ev-id="ev_6c865b287a" className="text-xs text-gray-500 text-center">{language === 'he' ? 'לחץ להוספת טקסט לדף' : 'Click to add text to page'}</p>
               </div>
               }
             {activePanel === 'layers' &&
-              <div data-ev-id="ev_77d0e08806" className="flex-1 overflow-y-auto p-4">
+              <div data-ev-id="ev_77d0e08806" className="flex-1 overflow-y-auto p-2">
                 {[...elements].sort((a, b) => b.zIndex - a.zIndex).map((element) =>
-                <div data-ev-id="ev_77d0e08806" key={element.id} onClick={() => setSelectedElementId(element.id)} className={`group flex items-center gap-2 p-2 rounded cursor-pointer ${selectedElementId === element.id ? 'bg-primary/20 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}>
+                <div data-ev-id="ev_77d0e08806" key={element.id} onClick={() => setSelectedElementId(element.id)} className={`group flex items-center gap-2 p-2 rounded-lg cursor-pointer mb-1 ${selectedElementId === element.id ? 'bg-[#e8f7f6] text-[#2daea8] border border-[#2daea8]' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'}`}>
                     {element.type === 'frame' ? <FrameIcon className="w-4 h-4" /> : <Type className="w-4 h-4" />}
                     <span data-ev-id="ev_3ea27307ea" className="flex-1 truncate text-sm">{element.name || `${element.type}-${element.id.slice(-4)}`}</span>
-                    <button data-ev-id="ev_4797f33edf" onClick={(e) => {e.stopPropagation();updateCurrentSpread({ objects: elements.filter((el) => el.id !== element.id), background: currentSpread?.canvas_data?.background || '#ffffff' });if (selectedElementId === element.id) setSelectedElementId(null);}} className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-500/20 rounded">
-                      <Trash2 className="w-3 h-3 text-red-400" />
+                    <button data-ev-id="ev_4797f33edf" onClick={(e) => {e.stopPropagation();updateCurrentSpread({ objects: elements.filter((el) => el.id !== element.id), background: currentSpread?.canvas_data?.background || '#ffffff' });if (selectedElementId === element.id) setSelectedElementId(null);}} className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-100 rounded">
+                      <Trash2 className="w-3 h-3 text-red-500" />
                     </button>
                   </div>
                 )}
-
+                {elements.length === 0 && <p data-ev-id="ev_0acc92c7ba" className="text-center text-gray-400 text-sm py-8">{language === 'he' ? 'אין שכבות' : 'No layers yet'}</p>}
               </div>
               }
           </div>
@@ -2333,19 +2337,26 @@ export default function ClientEditor() {
 
         {/* Main Canvas - Maximum Space */}
         <main data-ev-id="ev_a755909775" className="flex-1 flex flex-col overflow-hidden min-w-0">
-          <div data-ev-id="ev_0c8caac4e0" ref={canvasContainerRef} onDragOver={handleCanvasDragOver} onDragLeave={() => {setIsOverDropZone(false);setHoverFrameId(null);}} onDrop={handleCanvasDrop} className={`flex-1 overflow-hidden bg-gray-950 flex items-center justify-center relative ${isOverDropZone ? 'ring-2 ring-primary ring-inset' : ''}`}>
+          <div data-ev-id="ev_0c8caac4e0" ref={canvasContainerRef} onDragOver={handleCanvasDragOver} onDragLeave={() => {setIsOverDropZone(false);setHoverFrameId(null);}} onDrop={handleCanvasDrop} className={`flex-1 overflow-hidden bg-[#e8eaed] flex items-center justify-center relative ${isOverDropZone ? 'ring-2 ring-[#2daea8] ring-inset' : ''}`}>
             {/* Zoom Controls - Floating */}
-            <div data-ev-id="ev_zoom_controls" className="absolute bottom-4 left-4 z-20 flex items-center gap-1 bg-gray-800/90 backdrop-blur rounded-lg px-2 py-1">
-              <button data-ev-id="ev_ecb3eefecd" onClick={() => handleManualZoom(Math.max(0.2, zoom - 0.1))} className="p-1 text-gray-400 hover:text-white"><ZoomOut className="w-4 h-4" /></button>
-              <span data-ev-id="ev_a8994c9427" className="text-xs text-gray-300 w-12 text-center">{Math.round(zoom * 100)}%</span>
-              <button data-ev-id="ev_c12ad2aca1" onClick={() => handleManualZoom(Math.min(2, zoom + 0.1))} className="p-1 text-gray-400 hover:text-white"><ZoomIn className="w-4 h-4" /></button>
-              <span data-ev-id="ev_87b9cd2dfd" className="w-px h-4 bg-gray-600" />
-              <button data-ev-id="ev_82c0683a54" onClick={fitToViewport} className="p-1 text-gray-400 hover:text-white" title="Fit"><Maximize className="w-4 h-4" /></button>
+            <div data-ev-id="ev_zoom_controls" className="absolute bottom-4 left-4 z-20 flex items-center gap-1 bg-white/95 backdrop-blur shadow-md border border-gray-200 rounded-lg px-2 py-1.5">
+              <button data-ev-id="ev_ecb3eefecd" onClick={() => handleManualZoom(Math.max(0.2, zoom - 0.1))} className="p-1 text-gray-500 hover:text-[#2daea8] hover:bg-gray-100 rounded"><ZoomOut className="w-4 h-4" /></button>
+              <span data-ev-id="ev_a8994c9427" className="text-xs text-gray-600 w-12 text-center font-medium">{Math.round(zoom * 100)}%</span>
+              <button data-ev-id="ev_c12ad2aca1" onClick={() => handleManualZoom(Math.min(2, zoom + 0.1))} className="p-1 text-gray-500 hover:text-[#2daea8] hover:bg-gray-100 rounded"><ZoomIn className="w-4 h-4" /></button>
+              <span data-ev-id="ev_87b9cd2dfd" className="w-px h-4 bg-gray-200" />
+              <button data-ev-id="ev_82c0683a54" onClick={fitToViewport} className="p-1 text-gray-500 hover:text-[#2daea8] hover:bg-gray-100 rounded" title="Fit"><Maximize className="w-4 h-4" /></button>
             </div>
-            {isDraggingPhoto && <div data-ev-id="ev_9f36247ad5" className="absolute inset-0 pointer-events-none z-10 flex items-center justify-center"><div data-ev-id="ev_af642a8a5f" className={`px-4 py-2 rounded-lg ${hoverFrameId ? 'bg-green-500' : 'bg-primary'} text-white`}>{hoverFrameId ? language === 'he' ? 'שחרר' : 'Drop' : language === 'he' ? 'הוסף' : 'Add'}</div></div>}
-            {/* Canvas with proper centering */}
+            {isDraggingPhoto && <div data-ev-id="ev_9f36247ad5" className="absolute inset-0 pointer-events-none z-10 flex items-center justify-center"><div data-ev-id="ev_af642a8a5f" className={`px-4 py-2 rounded-lg shadow-lg ${hoverFrameId ? 'bg-green-500' : 'bg-[#2daea8]'} text-white font-medium`}>{hoverFrameId ? language === 'he' ? 'שחרר' : 'Drop' : language === 'he' ? 'הוסף' : 'Add'}</div></div>}
+            {/* Canvas with paper styling */}
             <div data-ev-id="ev_28261697dc" ref={stageContainerRef} className="relative flex-shrink-0" style={{ transform: `scale(${zoom})`, transformOrigin: 'center center' }}>
-                <Stage ref={stageRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} onClick={(e) => {if (e.target === e.target.getStage()) {setSelectedElementId(null);setEditMode('frame');setIsEditingText(false);}}} className="shadow-2xl">
+              {/* Page labels */}
+              <div data-ev-id="ev_85b90e6e93" className="absolute -top-6 left-0 right-0 flex justify-between px-4 text-xs text-gray-500 font-medium">
+                <span data-ev-id="ev_f427df5290">{isRTL ? language === 'he' ? 'דף ימין' : 'Right Page' : language === 'he' ? 'דף שמאל' : 'Left Page'}</span>
+                <span data-ev-id="ev_4c152fda37">{isRTL ? language === 'he' ? 'דף שמאל' : 'Left Page' : language === 'he' ? 'דף ימין' : 'Right Page'}</span>
+              </div>
+              {/* Paper shadow and edge */}
+              <div data-ev-id="ev_8eea988776" className="absolute -inset-1 bg-white rounded shadow-xl border border-gray-200" />
+                <Stage ref={stageRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} onClick={(e) => {if (e.target === e.target.getStage()) {setSelectedElementId(null);setEditMode('frame');setIsEditingText(false);}}} className="relative z-10">
                   <Layer>
                     <Rect x={0} y={0} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} fill={currentSpread?.canvas_data?.background || '#ffffff'} />
                     {gridEnabled && Array.from({ length: Math.floor(CANVAS_WIDTH / GRID_SIZE) }).map((_, i) => <Line key={`v${i}`} points={[(i + 1) * GRID_SIZE, 0, (i + 1) * GRID_SIZE, CANVAS_HEIGHT]} stroke="#94a3b8" strokeWidth={1} opacity={0.6} />)}
@@ -2371,62 +2382,68 @@ export default function ClientEditor() {
           </div>
           {/* Collapsible Spread Filmstrip */}
           {!focusMode &&
-          <div data-ev-id="ev_f487dfbf65" className={`bg-gray-800 border-t border-gray-700 flex flex-col transition-all ${filmstripOpen ? 'h-24' : 'h-8'}`}>
+          <div data-ev-id="ev_f487dfbf65" className={`bg-white border-t border-gray-200 flex flex-col transition-all shadow-inner ${filmstripOpen ? 'h-28' : 'h-9'}`}>
               {/* Filmstrip Header with Toggle */}
               <button data-ev-id="ev_eab09567e9"
             onClick={() => setFilmstripOpen(!filmstripOpen)}
-            className="h-8 px-3 flex items-center justify-between text-gray-400 hover:text-white flex-shrink-0">
+            className="h-9 px-4 flex items-center justify-between text-gray-600 hover:text-gray-900 flex-shrink-0 border-b border-gray-100">
 
-                <span data-ev-id="ev_8e3d430ab0" className="text-xs">{language === 'he' ? `פרישה ${currentSpreadIndex + 1} / ${spreads.length}` : `Spread ${currentSpreadIndex + 1} / ${spreads.length}`}</span>
+                <span data-ev-id="ev_8e3d430ab0" className="text-xs font-medium">{language === 'he' ? `פרישה ${currentSpreadIndex + 1} מתוך ${spreads.length}` : `Spread ${currentSpreadIndex + 1} of ${spreads.length}`}</span>
                 <ChevronDown className={`w-4 h-4 transition-transform ${filmstripOpen ? '' : 'rotate-180'}`} />
               </button>
               
               {/* Spread Thumbnails */}
               {filmstripOpen &&
-            <div data-ev-id="ev_filmstrip_content" className="flex-1 px-3 pb-2 flex items-center gap-2 overflow-x-auto">
+            <div data-ev-id="ev_filmstrip_content" className="flex-1 px-3 pb-2 flex items-center gap-3 overflow-x-auto">
                   <button data-ev-id="ev_2ee7d2018e"
               onClick={() => setCurrentSpreadIndex(Math.max(0, currentSpreadIndex - 1))}
               disabled={currentSpreadIndex === 0}
-              className="p-1 text-gray-400 hover:text-white disabled:opacity-30">
+              className="p-1.5 text-gray-400 hover:text-[#2daea8] hover:bg-gray-100 rounded disabled:opacity-30 disabled:hover:bg-transparent">
 
-                    <PrevArrow className="w-4 h-4" />
+                    <PrevArrow className="w-5 h-5" />
                   </button>
                   
-                  <div data-ev-id="ev_e9ac855e1f" className="flex-1 flex gap-2 overflow-x-auto py-1">
+                  <div data-ev-id="ev_e9ac855e1f" className="flex-1 flex gap-2 overflow-x-auto py-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
                     {spreads.map((spread, idx) =>
-                <button data-ev-id="ev_5ad0a1bc88"
-                key={spread.id}
-                onClick={() => setCurrentSpreadIndex(idx)}
-                className={`flex-shrink-0 h-12 rounded border-2 transition-colors overflow-hidden ${
-                idx === currentSpreadIndex ?
-                'border-primary ring-1 ring-primary/50' :
-                'border-gray-600 hover:border-gray-500'}`
-                }
-                style={{ aspectRatio: `${CANVAS_WIDTH} / ${CANVAS_HEIGHT}` }}
-                title={spread.spread_type === 'cover' ?
-                language === 'he' ? 'כריכה' : 'Cover' :
-                `${language === 'he' ? 'פרישה' : 'Spread'} ${idx}`
-                }>
+                <div data-ev-id="ev_de30b6bb04" key={spread.id} className="flex flex-col items-center gap-1 flex-shrink-0">
+                  <button data-ev-id="ev_5ad0a1bc88"
+                  onClick={() => setCurrentSpreadIndex(idx)}
+                  className={`h-14 rounded-lg border-2 transition-all overflow-hidden shadow-sm ${
+                  idx === currentSpreadIndex ?
+                  'border-[#2daea8] ring-2 ring-[#2daea8]/30' :
+                  'border-gray-200 hover:border-gray-300'}`
+                  }
+                  style={{ aspectRatio: `${CANVAS_WIDTH} / ${CANVAS_HEIGHT}` }}
+                  title={spread.spread_type === 'cover' ?
+                  language === 'he' ? 'כריכה' : 'Cover' :
+                  `${language === 'he' ? 'פרישה' : 'Spread'} ${idx}`
+                  }>
 
                         <div data-ev-id="ev_e7518be3d0"
-                  className="w-full h-full flex"
-                  style={{ background: spread.canvas_data?.background || '#ffffff' }}>
+                    className="w-full h-full flex relative"
+                    style={{ background: spread.canvas_data?.background || '#ffffff' }}>
 
                           {/* Left page */}
-                          <div data-ev-id="ev_2ab0c9546a" className="w-1/2 h-full border-r border-gray-400/30" />
+                          <div data-ev-id="ev_2ab0c9546a" className="w-1/2 h-full border-r border-gray-300/50" />
                           {/* Right page */}
                           <div data-ev-id="ev_2e6a2a7816" className="w-1/2 h-full" />
+                          {/* Center fold line */}
+                          <div data-ev-id="ev_54254a2ccf" className="absolute left-1/2 top-0 bottom-0 w-px bg-gray-300" />
                         </div>
                       </button>
+                  <span data-ev-id="ev_5b3c2ae75b" className={`text-[10px] font-medium ${idx === currentSpreadIndex ? 'text-[#2daea8]' : 'text-gray-500'}`}>
+                    {spread.spread_type === 'cover' ? language === 'he' ? 'כריכה' : 'Cover' : `${idx * 2 + 1}-${idx * 2 + 2}`}
+                  </span>
+                </div>
                 )}
                   </div>
                   
                   <button data-ev-id="ev_368ca97d4d"
               onClick={() => setCurrentSpreadIndex(Math.min(spreads.length - 1, currentSpreadIndex + 1))}
               disabled={currentSpreadIndex === spreads.length - 1}
-              className="p-1 text-gray-400 hover:text-white disabled:opacity-30">
+              className="p-1.5 text-gray-400 hover:text-[#2daea8] hover:bg-gray-100 rounded disabled:opacity-30 disabled:hover:bg-transparent">
 
-                    <NextArrow className="w-4 h-4" />
+                    <NextArrow className="w-5 h-5" />
                   </button>
                 </div>
             }
@@ -2435,32 +2452,39 @@ export default function ClientEditor() {
         </main>
 
         {/* Collapsible Right Sidebar - Properties - Only show when element selected */}
-        {!focusMode && (selectedFrame || selectedText) && (
-        <aside data-ev-id="ev_36aa83ca44" className={`w-72 bg-gray-800 border-${isRTL ? 'r' : 'l'} border-gray-700 flex flex-col ${isRTL ? 'order-first' : ''} flex-shrink-0`}>
+        {!focusMode && (selectedFrame || selectedText) &&
+        <aside data-ev-id="ev_36aa83ca44" className={`w-72 bg-white border-${isRTL ? 'r' : 'l'} border-gray-200 flex flex-col ${isRTL ? 'order-first' : ''} flex-shrink-0 shadow-sm`}>
           {/* TEXT PROPERTIES PANEL */}
           {selectedText ?
           <>
+              {/* Header */}
+              <div data-ev-id="ev_240f58fa4b" className="h-11 px-4 flex items-center justify-between border-b border-gray-200 bg-gray-50">
+                <span data-ev-id="ev_a781713ef5" className="text-sm font-semibold text-gray-800">{language === 'he' ? 'עריכת טקסט' : 'Text Editing'}</span>
+                <button data-ev-id="ev_20a664201a" onClick={() => setSelectedElementId(null)} className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded">
+                  <svg data-ev-id="ev_aac4bfb425" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path data-ev-id="ev_6b42424d60" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </div>
               {/* Text Mode Tabs */}
-              <div data-ev-id="ev_cce60934d3" className="flex border-b border-gray-700">
-                <button data-ev-id="ev_ed09e59e6e" onClick={() => setActivePropertiesTab('typography')} className={`flex-1 py-3 text-xs font-medium ${activePropertiesTab === 'typography' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-400'}`}>
+              <div data-ev-id="ev_cce60934d3" className="flex border-b border-gray-200 bg-gray-50">
+                <button data-ev-id="ev_ed09e59e6e" onClick={() => setActivePropertiesTab('typography')} className={`flex-1 py-2.5 text-xs font-medium transition-colors ${activePropertiesTab === 'typography' ? 'bg-white text-[#2daea8] border-b-2 border-[#2daea8]' : 'text-gray-500 hover:text-gray-700'}`}>
                   <Type className="w-4 h-4 mx-auto mb-1" />{language === 'he' ? 'טיפוגרפיה' : 'Typography'}
                 </button>
-                <button data-ev-id="ev_dfb965a698" onClick={() => setActivePropertiesTab('effects')} className={`flex-1 py-3 text-xs font-medium ${activePropertiesTab === 'effects' ? 'bg-purple-600 text-white' : 'bg-gray-700 text-gray-400'}`}>
+                <button data-ev-id="ev_dfb965a698" onClick={() => setActivePropertiesTab('effects')} className={`flex-1 py-2.5 text-xs font-medium transition-colors ${activePropertiesTab === 'effects' ? 'bg-white text-[#2daea8] border-b-2 border-[#2daea8]' : 'text-gray-500 hover:text-gray-700'}`}>
                   <Sparkles className="w-4 h-4 mx-auto mb-1" />{language === 'he' ? 'אפקטים' : 'Effects'}
                 </button>
-                <button data-ev-id="ev_a98b721b1f" onClick={() => setActivePropertiesTab('transform')} className={`flex-1 py-3 text-xs font-medium ${activePropertiesTab === 'transform' ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-400'}`}>
-                  <Move className="w-4 h-4 mx-auto mb-1" />{language === 'he' ? 'טרנספורם' : 'Transform'}
+                <button data-ev-id="ev_a98b721b1f" onClick={() => setActivePropertiesTab('transform')} className={`flex-1 py-2.5 text-xs font-medium transition-colors ${activePropertiesTab === 'transform' ? 'bg-white text-[#2daea8] border-b-2 border-[#2daea8]' : 'text-gray-500 hover:text-gray-700'}`}>
+                  <Move className="w-4 h-4 mx-auto mb-1" />{language === 'he' ? 'מיקום' : 'Position'}
                 </button>
               </div>
 
-              <div data-ev-id="ev_3df98d9da4" className="flex-1 overflow-y-auto p-4">
+              <div data-ev-id="ev_3df98d9da4" className="flex-1 overflow-y-auto p-4 bg-white">
                 {/* TYPOGRAPHY TAB */}
                 {activePropertiesTab === 'typography' &&
               <div data-ev-id="ev_da47e324b9" className="flex flex-col gap-4">
                     {/* Font Family */}
                     <div data-ev-id="ev_bf0af6d56d">
-                      <label data-ev-id="ev_e8a36be169" className="text-xs text-gray-400 mb-2 block">{language === 'he' ? 'גופן' : 'Font'}</label>
-                      <select data-ev-id="ev_6c4fcf3b5a" value={selectedText.fontFamily} onChange={(e) => updateElement(selectedText.id, { fontFamily: e.target.value })} className="w-full bg-gray-700 text-white rounded px-3 py-2 text-sm">
+                      <label data-ev-id="ev_e8a36be169" className="text-xs text-gray-500 font-medium mb-2 block">{language === 'he' ? 'גופן' : 'Font'}</label>
+                      <select data-ev-id="ev_6c4fcf3b5a" value={selectedText.fontFamily} onChange={(e) => updateElement(selectedText.id, { fontFamily: e.target.value })} className="w-full bg-gray-50 border border-gray-200 text-gray-800 rounded-lg px-3 py-2 text-sm focus:border-[#2daea8] focus:ring-1 focus:ring-[#2daea8] outline-none">
                         <option data-ev-id="ev_416da7aea2" value="Heebo">Heebo</option>
                         <option data-ev-id="ev_54b16a93c5" value="Inter">Inter</option>
                         <option data-ev-id="ev_7ce399d47d" value="Arial">Arial</option>
@@ -2472,21 +2496,21 @@ export default function ClientEditor() {
 
                     {/* Font Size */}
                     <div data-ev-id="ev_7b624cd406">
-                      <label data-ev-id="ev_c19bdbba2f" className="text-xs text-gray-400 mb-2 block">{language === 'he' ? 'גודל' : 'Size'}</label>
+                      <label data-ev-id="ev_c19bdbba2f" className="text-xs text-gray-500 font-medium mb-2 block">{language === 'he' ? 'גודל' : 'Size'}</label>
                       <div data-ev-id="ev_13f43b583f" className="flex items-center gap-3">
-                        <span data-ev-id="ev_a6f15638f4" className="text-white text-sm w-8">{selectedText.fontSize}</span>
-                        <input data-ev-id="ev_738f65daab" type="range" min="12" max="120" value={selectedText.fontSize} onChange={(e) => updateElement(selectedText.id, { fontSize: parseInt(e.target.value) })} className="flex-1 h-1 bg-gray-700 rounded" />
+                        <span data-ev-id="ev_a6f15638f4" className="text-gray-700 text-sm w-8 font-medium">{selectedText.fontSize}</span>
+                        <input data-ev-id="ev_738f65daab" type="range" min="12" max="120" value={selectedText.fontSize} onChange={(e) => updateElement(selectedText.id, { fontSize: parseInt(e.target.value) })} className="flex-1 h-1.5 bg-gray-200 rounded-full accent-[#2daea8]" />
                       </div>
                     </div>
 
                     {/* Font Style */}
                     <div data-ev-id="ev_9ed733f3f4">
-                      <label data-ev-id="ev_43f5f742ab" className="text-xs text-gray-400 mb-2 block">{language === 'he' ? 'סגנון' : 'Style'}</label>
+                      <label data-ev-id="ev_43f5f742ab" className="text-xs text-gray-500 font-medium mb-2 block">{language === 'he' ? 'סגנון' : 'Style'}</label>
                       <div data-ev-id="ev_bfb7d7d20f" className="flex gap-2">
-                        <button data-ev-id="ev_fa12a2a972" onClick={() => updateElement(selectedText.id, { fontWeight: selectedText.fontWeight === 'bold' ? 'normal' : 'bold' })} className={`flex-1 py-2.5 rounded flex items-center justify-center gap-1 ${selectedText.fontWeight === 'bold' ? 'bg-primary text-white' : 'bg-gray-700 text-gray-400'}`}>
+                        <button data-ev-id="ev_fa12a2a972" onClick={() => updateElement(selectedText.id, { fontWeight: selectedText.fontWeight === 'bold' ? 'normal' : 'bold' })} className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-1 text-sm font-medium border ${selectedText.fontWeight === 'bold' ? 'bg-[#2daea8] text-white border-[#2daea8]' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'}`}>
                           <Bold className="w-4 h-4" /> {language === 'he' ? 'רגיל' : 'Bold'}
                         </button>
-                        <button data-ev-id="ev_44fb1403ce" onClick={() => updateElement(selectedText.id, { fontStyle: selectedText.fontStyle === 'italic' ? 'normal' : 'italic' })} className={`flex-1 py-2.5 rounded flex items-center justify-center gap-1 ${selectedText.fontStyle === 'italic' ? 'bg-primary text-white' : 'bg-gray-700 text-gray-400'}`}>
+                        <button data-ev-id="ev_44fb1403ce" onClick={() => updateElement(selectedText.id, { fontStyle: selectedText.fontStyle === 'italic' ? 'normal' : 'italic' })} className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-1 text-sm font-medium border ${selectedText.fontStyle === 'italic' ? 'bg-[#2daea8] text-white border-[#2daea8]' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'}`}>
                           <Italic className="w-4 h-4" /> {language === 'he' ? 'נטוי' : 'Italic'}
                         </button>
                       </div>
@@ -2494,12 +2518,12 @@ export default function ClientEditor() {
 
                     {/* Text Decoration */}
                     <div data-ev-id="ev_1dde0050c3">
-                      <label data-ev-id="ev_4ebee7e040" className="text-xs text-gray-400 mb-2 block">{language === 'he' ? 'קו תחתון' : 'Underline'}</label>
+                      <label data-ev-id="ev_4ebee7e040" className="text-xs text-gray-500 font-medium mb-2 block">{language === 'he' ? 'קו תחתון' : 'Underline'}</label>
                       <div data-ev-id="ev_1b6d9e5330" className="flex gap-2">
-                        <button data-ev-id="ev_67f453d0e5" onClick={() => updateElement(selectedText.id, { textDecoration: 'none' })} className={`flex-1 py-2.5 rounded flex items-center justify-center gap-1 ${selectedText.textDecoration === 'none' ? 'bg-primary text-white' : 'bg-gray-700 text-gray-400'}`}>
+                        <button data-ev-id="ev_67f453d0e5" onClick={() => updateElement(selectedText.id, { textDecoration: 'none' })} className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-1 text-sm font-medium border ${selectedText.textDecoration === 'none' ? 'bg-[#2daea8] text-white border-[#2daea8]' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'}`}>
                           <Type className="w-4 h-4 mr-1" /> {language === 'he' ? 'ללא' : 'None'}
                         </button>
-                        <button data-ev-id="ev_235833c08d" onClick={() => updateElement(selectedText.id, { textDecoration: 'underline' })} className={`flex-1 py-2.5 rounded flex items-center justify-center gap-1 ${selectedText.textDecoration === 'underline' ? 'bg-primary text-white' : 'bg-gray-700 text-gray-400'}`}>
+                        <button data-ev-id="ev_235833c08d" onClick={() => updateElement(selectedText.id, { textDecoration: 'underline' })} className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-1 text-sm font-medium border ${selectedText.textDecoration === 'underline' ? 'bg-[#2daea8] text-white border-[#2daea8]' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'}`}>
                           <Underline className="w-4 h-4 mr-1" /> {language === 'he' ? 'קו תחתון' : 'Underline'}
                         </button>
                       </div>
@@ -2507,37 +2531,37 @@ export default function ClientEditor() {
 
                     {/* Text Alignment */}
                     <div data-ev-id="ev_53a5fb1cc0">
-                      <label data-ev-id="ev_fe3be7e010" className="text-xs text-gray-400 mb-2 block">{language === 'he' ? 'יישור טקסט' : 'Alignment'}</label>
+                      <label data-ev-id="ev_fe3be7e010" className="text-xs text-gray-500 font-medium mb-2 block">{language === 'he' ? 'יישור טקסט' : 'Alignment'}</label>
                       <div data-ev-id="ev_b434cfd9c4" className="flex gap-1">
-                        <button data-ev-id="ev_274a589a47" onClick={() => updateElement(selectedText.id, { textAlign: 'right' })} className={`flex-1 py-2.5 rounded flex items-center justify-center gap-1 ${selectedText.textAlign === 'right' ? 'bg-primary text-white' : 'bg-gray-700 text-gray-400'}`}><AlignRight className="w-4 h-4" /></button>
-                        <button data-ev-id="ev_5eec5b04bd" onClick={() => updateElement(selectedText.id, { textAlign: 'center' })} className={`flex-1 py-2.5 rounded flex items-center justify-center gap-1 ${selectedText.textAlign === 'center' ? 'bg-primary text-white' : 'bg-gray-700 text-gray-400'}`}><AlignCenter className="w-4 h-4" /></button>
-                        <button data-ev-id="ev_81e41aaaf6" onClick={() => updateElement(selectedText.id, { textAlign: 'left' })} className={`flex-1 py-2.5 rounded flex items-center justify-center gap-1 ${selectedText.textAlign === 'left' ? 'bg-primary text-white' : 'bg-gray-700 text-gray-400'}`}><AlignLeft className="w-4 h-4" /></button>
-                        <button data-ev-id="ev_2f7fa7e32d" onClick={() => updateElement(selectedText.id, { textAlign: 'justify' })} className={`flex-1 py-2.5 rounded flex items-center justify-center gap-1 ${selectedText.textAlign === 'justify' ? 'bg-primary text-white' : 'bg-gray-700 text-gray-400'}`}><AlignJustify className="w-4 h-4" /></button>
+                        <button data-ev-id="ev_274a589a47" onClick={() => updateElement(selectedText.id, { textAlign: 'right' })} className={`flex-1 py-2 rounded-lg flex items-center justify-center border ${selectedText.textAlign === 'right' ? 'bg-[#2daea8] text-white border-[#2daea8]' : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'}`}><AlignRight className="w-4 h-4" /></button>
+                        <button data-ev-id="ev_5eec5b04bd" onClick={() => updateElement(selectedText.id, { textAlign: 'center' })} className={`flex-1 py-2 rounded-lg flex items-center justify-center border ${selectedText.textAlign === 'center' ? 'bg-[#2daea8] text-white border-[#2daea8]' : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'}`}><AlignCenter className="w-4 h-4" /></button>
+                        <button data-ev-id="ev_81e41aaaf6" onClick={() => updateElement(selectedText.id, { textAlign: 'left' })} className={`flex-1 py-2 rounded-lg flex items-center justify-center border ${selectedText.textAlign === 'left' ? 'bg-[#2daea8] text-white border-[#2daea8]' : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'}`}><AlignLeft className="w-4 h-4" /></button>
+                        <button data-ev-id="ev_2f7fa7e32d" onClick={() => updateElement(selectedText.id, { textAlign: 'justify' })} className={`flex-1 py-2 rounded-lg flex items-center justify-center border ${selectedText.textAlign === 'justify' ? 'bg-[#2daea8] text-white border-[#2daea8]' : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'}`}><AlignJustify className="w-4 h-4" /></button>
                       </div>
                     </div>
 
                     {/* Line Height */}
                     <div data-ev-id="ev_70dc84d09a">
-                      <label data-ev-id="ev_61701bb7b2" className="text-xs text-gray-400 mb-2 block">{language === 'he' ? 'גובה שורה' : 'Line Height'}</label>
+                      <label data-ev-id="ev_61701bb7b2" className="text-xs text-gray-500 font-medium mb-2 block">{language === 'he' ? 'גובה שורה' : 'Line Height'}</label>
                       <div data-ev-id="ev_a1d4437686" className="flex items-center gap-3">
-                        <span data-ev-id="ev_ef1bf87c7e" className="text-white text-sm w-8">{selectedText.lineHeight.toFixed(1)}</span>
-                        <input data-ev-id="ev_42494986fd" type="range" min="80" max="200" value={selectedText.lineHeight * 100} onChange={(e) => updateElement(selectedText.id, { lineHeight: parseInt(e.target.value) / 100 })} className="flex-1 h-1 bg-gray-700 rounded" />
+                        <span data-ev-id="ev_ef1bf87c7e" className="text-gray-700 text-sm w-8 font-medium">{selectedText.lineHeight.toFixed(1)}</span>
+                        <input data-ev-id="ev_42494986fd" type="range" min="80" max="200" value={selectedText.lineHeight * 100} onChange={(e) => updateElement(selectedText.id, { lineHeight: parseInt(e.target.value) / 100 })} className="flex-1 h-1.5 bg-gray-200 rounded-full accent-[#2daea8]" />
                       </div>
                     </div>
 
                     {/* Letter Spacing */}
                     <div data-ev-id="ev_273499f317">
-                      <label data-ev-id="ev_452ef459c4" className="text-xs text-gray-400 mb-2 block">{language === 'he' ? 'מרווח אותיות' : 'Letter Spacing'}</label>
+                      <label data-ev-id="ev_452ef459c4" className="text-xs text-gray-500 font-medium mb-2 block">{language === 'he' ? 'מרווח אותיות' : 'Letter Spacing'}</label>
                       <div data-ev-id="ev_26610e8a50" className="flex items-center gap-3">
-                        <span data-ev-id="ev_12281e8170" className="text-white text-sm w-8">{selectedText.letterSpacing}</span>
-                        <input data-ev-id="ev_a3258a4626" type="range" min="-5" max="20" value={selectedText.letterSpacing} onChange={(e) => updateElement(selectedText.id, { letterSpacing: parseInt(e.target.value) })} className="flex-1 h-1 bg-gray-700 rounded" />
+                        <span data-ev-id="ev_12281e8170" className="text-gray-700 text-sm w-8 font-medium">{selectedText.letterSpacing}</span>
+                        <input data-ev-id="ev_a3258a4626" type="range" min="-5" max="20" value={selectedText.letterSpacing} onChange={(e) => updateElement(selectedText.id, { letterSpacing: parseInt(e.target.value) })} className="flex-1 h-1.5 bg-gray-200 rounded-full accent-[#2daea8]" />
                       </div>
                     </div>
 
                     {/* Text Color */}
                     <div data-ev-id="ev_ecb4c97697">
-                      <label data-ev-id="ev_402e3485f1" className="text-xs text-gray-400 mb-2 block">{language === 'he' ? 'צבע טקסט' : 'Text Color'}</label>
-                      <input data-ev-id="ev_ab972e7a2e" type="color" value={selectedText.fill} onChange={(e) => updateElement(selectedText.id, { fill: e.target.value })} className="w-full h-10 rounded cursor-pointer" />
+                      <label data-ev-id="ev_402e3485f1" className="text-xs text-gray-500 font-medium mb-2 block">{language === 'he' ? 'צבע טקסט' : 'Text Color'}</label>
+                      <input data-ev-id="ev_ab972e7a2e" type="color" value={selectedText.fill} onChange={(e) => updateElement(selectedText.id, { fill: e.target.value })} className="w-full h-10 rounded-lg cursor-pointer border border-gray-200" />
                     </div>
                   </div>
               }
@@ -2546,29 +2570,29 @@ export default function ClientEditor() {
                 {activePropertiesTab === 'effects' && selectedFrame.photoSrc &&
               <div data-ev-id="ev_fc01b6482b" className="flex flex-col gap-4">
                     {/* Text Shadow */}
-                    <div data-ev-id="ev_0283557c20" className="border-b border-gray-700 pb-4">
+                    <div data-ev-id="ev_0283557c20" className="border-b border-gray-200 pb-4">
                       <div data-ev-id="ev_6421e6a614" className="flex items-center justify-between mb-2">
-                        <label data-ev-id="ev_7dbaa2be48" className="text-xs text-gray-400">{language === 'he' ? 'צל' : 'Shadow'}</label>
-                        <button data-ev-id="ev_ecebf38269" onClick={() => updateElement(selectedText.id, { shadow: { ...selectedText.shadow, enabled: !selectedText.shadow.enabled } })} className={`w-10 h-5 rounded-full transition-colors flex items-center px-0.5 ${selectedText.shadow.enabled ? 'bg-purple-600 justify-end' : 'bg-gray-600 justify-start'}`}>
+                        <label data-ev-id="ev_7dbaa2be48" className="text-xs text-gray-600 font-medium">{language === 'he' ? 'צל' : 'Shadow'}</label>
+                        <button data-ev-id="ev_ecebf38269" onClick={() => updateElement(selectedText.id, { shadow: { ...selectedText.shadow, enabled: !selectedText.shadow.enabled } })} className={`w-10 h-5 rounded-full transition-colors flex items-center px-0.5 ${selectedText.shadow.enabled ? 'bg-[#2daea8] justify-end' : 'bg-gray-300 justify-start'}`}>
                           <div data-ev-id="ev_5481f9b8c6" className="w-4 h-4 rounded-full bg-white shadow-sm pointer-events-none" />
                         </button>
                       </div>
                       {selectedText.shadow.enabled &&
                   <div data-ev-id="ev_f32352f56b" className="flex flex-col gap-2 mt-2">
                           <div data-ev-id="ev_424a8c526c" className="flex items-center gap-2">
-                            <span data-ev-id="ev_6a7a391306" className="text-xs text-gray-500 w-16">{language === 'he' ? 'טשטוש' : 'Blur'}</span>
-                            <input data-ev-id="ev_f0a66debf9" type="range" min="0" max="20" value={selectedText.shadow.blur} onChange={(e) => updateElement(selectedText.id, { shadow: { ...selectedText.shadow, blur: parseInt(e.target.value) } })} className="flex-1 h-1 bg-gray-700 rounded" />
+                            <span data-ev-id="ev_6a7a391306" className="text-xs text-gray-600 w-16">{language === 'he' ? 'טשטוש' : 'Blur'}</span>
+                            <input data-ev-id="ev_f0a66debf9" type="range" min="0" max="20" value={selectedText.shadow.blur} onChange={(e) => updateElement(selectedText.id, { shadow: { ...selectedText.shadow, blur: parseInt(e.target.value) } })} className="flex-1 h-1.5 bg-gray-200 rounded-full accent-[#2daea8]" />
                           </div>
                           <div data-ev-id="ev_e02bbe4297" className="flex items-center gap-2">
-                            <span data-ev-id="ev_efd115ca44" className="text-xs text-gray-500 w-16">X</span>
-                            <input data-ev-id="ev_236aab115e" type="range" min="-20" max="20" value={selectedText.shadow.offsetX} onChange={(e) => updateElement(selectedText.id, { shadow: { ...selectedText.shadow, offsetX: parseInt(e.target.value) } })} className="flex-1 h-1 bg-gray-700 rounded" />
+                            <span data-ev-id="ev_efd115ca44" className="text-xs text-gray-600 w-16">X</span>
+                            <input data-ev-id="ev_236aab115e" type="range" min="-20" max="20" value={selectedText.shadow.offsetX} onChange={(e) => updateElement(selectedText.id, { shadow: { ...selectedText.shadow, offsetX: parseInt(e.target.value) } })} className="flex-1 h-1.5 bg-gray-200 rounded-full accent-[#2daea8]" />
                           </div>
                           <div data-ev-id="ev_4e68670c29" className="flex items-center gap-2">
-                            <span data-ev-id="ev_97978b2017" className="text-xs text-gray-500 w-16">Y</span>
-                            <input data-ev-id="ev_e0e92d532b" type="range" min="-20" max="20" value={selectedText.shadow.offsetY} onChange={(e) => updateElement(selectedText.id, { shadow: { ...selectedText.shadow, offsetY: parseInt(e.target.value) } })} className="flex-1 h-1 bg-gray-700 rounded" />
+                            <span data-ev-id="ev_97978b2017" className="text-xs text-gray-600 w-16">Y</span>
+                            <input data-ev-id="ev_e0e92d532b" type="range" min="-20" max="20" value={selectedText.shadow.offsetY} onChange={(e) => updateElement(selectedText.id, { shadow: { ...selectedText.shadow, offsetY: parseInt(e.target.value) } })} className="flex-1 h-1.5 bg-gray-200 rounded-full accent-[#2daea8]" />
                           </div>
                           <div data-ev-id="ev_65c08568ee" className="flex items-center gap-2">
-                            <span data-ev-id="ev_876f57a85f" className="text-xs text-gray-500 w-16">{language === 'he' ? 'צבע' : 'Color'}</span>
+                            <span data-ev-id="ev_876f57a85f" className="text-xs text-gray-600 w-16">{language === 'he' ? 'צבע' : 'Color'}</span>
                             <input data-ev-id="ev_f6ef5f86d8" type="color" value={selectedText.shadow.color} onChange={(e) => updateElement(selectedText.id, { shadow: { ...selectedText.shadow, color: e.target.value } })} className="w-8 h-6 rounded cursor-pointer" />
                           </div>
                         </div>
@@ -2576,21 +2600,21 @@ export default function ClientEditor() {
                     </div>
 
                     {/* Text Stroke */}
-                    <div data-ev-id="ev_b421641fa5" className="border-b border-gray-700 pt-4">
+                    <div data-ev-id="ev_b421641fa5" className="border-b border-gray-200 pt-4">
                       <div data-ev-id="ev_fad793c43c" className="flex items-center justify-between mb-2">
                         <label data-ev-id="ev_52f0825c1a" className="text-xs text-gray-400">{language === 'he' ? 'קו מתאר' : 'Stroke'}</label>
-                        <button data-ev-id="ev_a0a88e8a6e" onClick={() => updateElement(selectedText.id, { stroke: { ...selectedText.stroke, enabled: !selectedText.stroke.enabled } })} className={`w-10 h-5 rounded-full transition-colors flex items-center px-0.5 ${selectedText.stroke.enabled ? 'bg-purple-600 justify-end' : 'bg-gray-600 justify-start'}`}>
+                        <button data-ev-id="ev_a0a88e8a6e" onClick={() => updateElement(selectedText.id, { stroke: { ...selectedText.stroke, enabled: !selectedText.stroke.enabled } })} className={`w-10 h-5 rounded-full transition-colors flex items-center px-0.5 ${selectedText.stroke.enabled ? 'bg-[#2daea8] justify-end' : 'bg-gray-300 justify-start'}`}>
                           <div data-ev-id="ev_24896d584e" className="w-4 h-4 rounded-full bg-white shadow-sm pointer-events-none" />
                         </button>
                       </div>
                       {selectedText.stroke.enabled &&
                   <div data-ev-id="ev_9ab10631b9" className="flex flex-col gap-2 mt-2">
                           <div data-ev-id="ev_3199694f5e" className="flex items-center gap-2">
-                            <span data-ev-id="ev_66588b2710" className="text-xs text-gray-500 w-16">{language === 'he' ? 'עובי' : 'Width'}</span>
-                            <input data-ev-id="ev_868cadb6b3" type="range" min="1" max="10" value={selectedText.stroke.width} onChange={(e) => updateElement(selectedText.id, { stroke: { ...selectedText.stroke, width: parseInt(e.target.value) } })} className="flex-1 h-1 bg-gray-700 rounded" />
+                            <span data-ev-id="ev_66588b2710" className="text-xs text-gray-600 w-16">{language === 'he' ? 'עובי' : 'Width'}</span>
+                            <input data-ev-id="ev_868cadb6b3" type="range" min="1" max="10" value={selectedText.stroke.width} onChange={(e) => updateElement(selectedText.id, { stroke: { ...selectedText.stroke, width: parseInt(e.target.value) } })} className="flex-1 h-1.5 bg-gray-200 rounded-full accent-[#2daea8]" />
                           </div>
                           <div data-ev-id="ev_718494990b" className="flex items-center gap-2">
-                            <span data-ev-id="ev_9ece8731a6" className="text-xs text-gray-500 w-16">{language === 'he' ? 'צבע' : 'Color'}</span>
+                            <span data-ev-id="ev_9ece8731a6" className="text-xs text-gray-600 w-16">{language === 'he' ? 'צבע' : 'Color'}</span>
                             <input data-ev-id="ev_5f534951c8" type="color" value={selectedText.stroke.color} onChange={(e) => updateElement(selectedText.id, { stroke: { ...selectedText.stroke, color: e.target.value } })} className="w-8 h-6 rounded cursor-pointer" />
                           </div>
                         </div>
@@ -2599,7 +2623,7 @@ export default function ClientEditor() {
 
                     {/* Highlight Color */}
                     <div data-ev-id="ev_f208101aa2">
-                      <label data-ev-id="ev_cb4f1e5fb4" className="text-xs text-gray-400 mb-2 block">{language === 'he' ? 'צבע הדגשה' : 'Highlight'}</label>
+                      <label data-ev-id="ev_cb4f1e5fb4" className="text-xs text-gray-500 font-medium mb-2 block">{language === 'he' ? 'צבע הדגשה' : 'Highlight'}</label>
                       <div data-ev-id="ev_214ccc7614" className="flex items-center gap-2">
                         <input data-ev-id="ev_f18112905d" type="color" value={selectedText.highlightColor || '#ffff00'} onChange={(e) => updateElement(selectedText.id, { highlightColor: e.target.value })} className="w-10 h-8 rounded cursor-pointer" />
                         <button data-ev-id="ev_4797f33edf" onClick={() => updateElement(selectedText.id, { highlightColor: selectedText.highlightColor ? null : '#ffff00' })} className={`flex-1 py-2 rounded text-xs ${selectedText.highlightColor ? 'bg-purple-600 text-white' : 'bg-gray-700 text-gray-400'}`}>
@@ -2609,7 +2633,7 @@ export default function ClientEditor() {
                     </div>
 
                     {/* Reset Effects */}
-                    <button data-ev-id="ev_b641367971" onClick={resetTextStyle} className="w-full py-2 rounded bg-gray-700 text-gray-300 text-xs flex items-center justify-center gap-2 hover:bg-gray-600">
+                    <button data-ev-id="ev_b641367971" onClick={resetTextStyle} className="w-full py-2 rounded-lg bg-gray-100 text-gray-600 text-xs flex items-center justify-center gap-2 hover:bg-gray-200 border border-gray-200">
                       <RefreshCw className="w-4 h-4" />{language === 'he' ? 'איפוס אפקטים' : 'Reset Effects'}
                     </button>
                   </div>
@@ -2619,33 +2643,40 @@ export default function ClientEditor() {
 
           selectedFrame ?
           <>
+              {/* Header */}
+              <div data-ev-id="ev_15ee99809f" className="h-11 px-4 flex items-center justify-between border-b border-gray-200 bg-gray-50">
+                <span data-ev-id="ev_5480e450a5" className="text-sm font-semibold text-gray-800">{language === 'he' ? 'עריכת תמונה' : 'Photo Editing'}</span>
+                <button data-ev-id="ev_1aee4cd753" onClick={() => setSelectedElementId(null)} className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded">
+                  <svg data-ev-id="ev_c5626e737c" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path data-ev-id="ev_13913df0f2" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </div>
               {/* Frame/Photo Mode Tabs */}
-              <div data-ev-id="ev_297fac7f6a" className="flex border-b border-gray-700">
-                <button data-ev-id="ev_910eb3321c" onClick={() => {setEditMode('frame');setActivePropertiesTab('frame');}} className={`flex-1 py-3 text-xs font-medium ${editMode === 'frame' ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-400'}`}>
+              <div data-ev-id="ev_297fac7f6a" className="flex border-b border-gray-200 bg-gray-50">
+                <button data-ev-id="ev_910eb3321c" onClick={() => {setEditMode('frame');setActivePropertiesTab('frame');}} className={`flex-1 py-2.5 text-xs font-medium transition-colors ${editMode === 'frame' ? 'bg-white text-[#2daea8] border-b-2 border-[#2daea8]' : 'text-gray-500 hover:text-gray-700'}`}>
                   <FrameIcon className="w-4 h-4 mx-auto mb-1" />{language === 'he' ? 'מסגרת' : 'Frame'}
                 </button>
                 {selectedFrame.photoSrc &&
               <>
-                    <button data-ev-id="ev_268b83512c" onClick={() => {setEditMode('photo');setActivePropertiesTab('photo');}} className={`flex-1 py-3 text-xs font-medium ${editMode === 'photo' && activePropertiesTab === 'photo' ? 'bg-orange-600 text-white' : 'bg-gray-700 text-gray-400'}`}>
+                    <button data-ev-id="ev_268b83512c" onClick={() => {setEditMode('photo');setActivePropertiesTab('photo');}} className={`flex-1 py-2.5 text-xs font-medium transition-colors ${editMode === 'photo' && activePropertiesTab === 'photo' ? 'bg-white text-[#2daea8] border-b-2 border-[#2daea8]' : 'text-gray-500 hover:text-gray-700'}`}>
                       <Image className="w-4 h-4 mx-auto mb-1" />{language === 'he' ? 'תמונה' : 'Photo'}
                     </button>
-                    <button data-ev-id="ev_982d50759a" onClick={() => {setEditMode('photo');setActivePropertiesTab('adjustments');}} className={`flex-1 py-3 text-xs font-medium ${activePropertiesTab === 'adjustments' ? 'bg-purple-600 text-white' : 'bg-gray-700 text-gray-400'}`}>
+                    <button data-ev-id="ev_982d50759a" onClick={() => {setEditMode('photo');setActivePropertiesTab('adjustments');}} className={`flex-1 py-2.5 text-xs font-medium transition-colors ${activePropertiesTab === 'adjustments' ? 'bg-white text-[#2daea8] border-b-2 border-[#2daea8]' : 'text-gray-500 hover:text-gray-700'}`}>
                       <Sun className="w-4 h-4 mx-auto mb-1" />{language === 'he' ? 'התאמות' : 'Adjust'}
                     </button>
                   </>
               }
               </div>
 
-              <div data-ev-id="ev_6d3c807f49" className="flex-1 overflow-y-auto p-4">
+              <div data-ev-id="ev_6d3c807f49" className="flex-1 overflow-y-auto p-4 bg-white">
                 {/* FRAME MODE CONTROLS */}
                 {editMode === 'frame' &&
               <div data-ev-id="ev_7d27d09fef" className="flex flex-col gap-4">
                     {/* Shape Selector */}
                     <div data-ev-id="ev_6e4f889828">
-                      <label data-ev-id="ev_5142d47bd8" className="text-xs text-gray-400 mb-2 block">{language === 'he' ? 'צורה' : 'Shape'}</label>
+                      <label data-ev-id="ev_5142d47bd8" className="text-xs text-gray-500 font-medium mb-2 block">{language === 'he' ? 'צורה' : 'Shape'}</label>
                       <div data-ev-id="ev_b1ebab8290" className="grid grid-cols-5 gap-1">
                         {shapeIcons.map(({ shape, icon, label }) =>
-                    <button data-ev-id="ev_2851499303" key={shape} onClick={() => updateElement(selectedFrame.id, { shape })} title={label[language]} className={`p-2 rounded flex items-center justify-center ${selectedFrame.shape === shape ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-400'}`}>
+                    <button data-ev-id="ev_2851499303" key={shape} onClick={() => updateElement(selectedFrame.id, { shape })} title={label[language]} className={`p-2 rounded-lg flex items-center justify-center border ${selectedFrame.shape === shape ? 'bg-[#2daea8] text-white border-[#2daea8]' : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'}`}>
                             {icon}
                           </button>
                     )}
@@ -2654,65 +2685,65 @@ export default function ClientEditor() {
 
                     {/* Flip Controls */}
                     <div data-ev-id="ev_a135962921">
-                      <label data-ev-id="ev_af86720db6" className="text-xs text-gray-400 mb-2 block">{language === 'he' ? 'היפוך' : 'Flip'}</label>
+                      <label data-ev-id="ev_af86720db6" className="text-xs text-gray-500 font-medium mb-2 block">{language === 'he' ? 'היפוך' : 'Flip'}</label>
                       <div data-ev-id="ev_f95fa055b8" className="flex gap-2">
-                        <button type="button" data-ev-id="ev_00cc6f8d28" onClick={() => updateElement(selectedFrame.id, { flipH: !selectedFrame.flipH })} className={`flex-1 py-2 rounded text-xs flex items-center justify-center gap-1 cursor-pointer ${selectedFrame.flipH ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-400 hover:bg-gray-600'}`}>
+                        <button type="button" data-ev-id="ev_00cc6f8d28" onClick={() => updateElement(selectedFrame.id, { flipH: !selectedFrame.flipH })} className={`flex-1 py-2 rounded-lg text-xs flex items-center justify-center gap-1 cursor-pointer border ${selectedFrame.flipH ? 'bg-[#2daea8] text-white border-[#2daea8]' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'}`}>
                           <FlipHorizontal className="w-4 h-4 pointer-events-none" /><span data-ev-id="ev_5ce8d2ce30" className="pointer-events-none">{language === 'he' ? 'אופקי' : 'H'}</span>
                         </button>
-                        <button type="button" data-ev-id="ev_5c6c94d22c" onClick={() => updateElement(selectedFrame.id, { flipV: !selectedFrame.flipV })} className={`flex-1 py-2 rounded text-xs flex items-center justify-center gap-1 cursor-pointer ${selectedFrame.flipV ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-400 hover:bg-gray-600'}`}>
+                        <button type="button" data-ev-id="ev_5c6c94d22c" onClick={() => updateElement(selectedFrame.id, { flipV: !selectedFrame.flipV })} className={`flex-1 py-2 rounded-lg text-xs flex items-center justify-center gap-1 cursor-pointer border ${selectedFrame.flipV ? 'bg-[#2daea8] text-white border-[#2daea8]' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'}`}>
                           <FlipVertical className="w-4 h-4 pointer-events-none" /><span data-ev-id="ev_0ef6a0d2b3" className="pointer-events-none">{language === 'he' ? 'אנכי' : 'V'}</span>
                         </button>
                       </div>
                     </div>
 
                     {/* Border Controls */}
-                    <div data-ev-id="ev_ddc9926071" className="border-t border-gray-700 pt-4">
+                    <div data-ev-id="ev_ddc9926071" className="border-t border-gray-200 pt-4">
                       <div data-ev-id="ev_c3e1d612de" className="flex items-center justify-between mb-2">
-                        <label data-ev-id="ev_d29a347861" className="text-xs text-gray-400">{language === 'he' ? 'מסגרת' : 'Border'}</label>
-                        <button data-ev-id="ev_3bd2be4aa8" onClick={() => updateElement(selectedFrame.id, { borderEnabled: !selectedFrame.borderEnabled })} className={`w-10 h-5 rounded-full transition-colors flex items-center px-0.5 ${selectedFrame.borderEnabled ? 'bg-green-600 justify-end' : 'bg-gray-600 justify-start'}`}>
+                        <label data-ev-id="ev_d29a347861" className="text-xs text-gray-600 font-medium">{language === 'he' ? 'מסגרת' : 'Border'}</label>
+                        <button data-ev-id="ev_3bd2be4aa8" onClick={() => updateElement(selectedFrame.id, { borderEnabled: !selectedFrame.borderEnabled })} className={`w-10 h-5 rounded-full transition-colors flex items-center px-0.5 ${selectedFrame.borderEnabled ? 'bg-[#2daea8] justify-end' : 'bg-gray-300 justify-start'}`}>
                           <div data-ev-id="ev_99454d861c" className="w-4 h-4 rounded-full bg-white shadow-sm pointer-events-none" />
                         </button>
                       </div>
                       {selectedFrame.borderEnabled &&
                   <div data-ev-id="ev_aeb372976d" className="flex flex-col gap-2 mt-2">
                           <div data-ev-id="ev_14dd16743f" className="flex items-center gap-2">
-                            <span data-ev-id="ev_83e342658f" className="text-xs text-gray-500 w-12">{language === 'he' ? 'עובי' : 'Width'}</span>
-                            <input data-ev-id="ev_4baf5f8b6a" type="range" min="1" max="20" value={selectedFrame.borderWidth} onChange={(e) => updateElement(selectedFrame.id, { borderWidth: parseInt(e.target.value) })} className="flex-1 h-1 bg-gray-700 rounded" />
+                            <span data-ev-id="ev_83e342658f" className="text-xs text-gray-600 w-12">{language === 'he' ? 'עובי' : 'Width'}</span>
+                            <input data-ev-id="ev_4baf5f8b6a" type="range" min="1" max="20" value={selectedFrame.borderWidth} onChange={(e) => updateElement(selectedFrame.id, { borderWidth: parseInt(e.target.value) })} className="flex-1 h-1.5 bg-gray-200 rounded-full accent-[#2daea8]" />
                             <span data-ev-id="ev_38b7a28425" className="text-xs text-gray-500 w-6">{selectedFrame.borderWidth}</span>
                           </div>
                           <div data-ev-id="ev_9eb0b4666c" className="flex items-center gap-2">
-                            <span data-ev-id="ev_10307b5fec" className="text-xs text-gray-500 w-12">{language === 'he' ? 'צבע' : 'Color'}</span>
+                            <span data-ev-id="ev_10307b5fec" className="text-xs text-gray-600 w-12">{language === 'he' ? 'צבע' : 'Color'}</span>
                             <input data-ev-id="ev_b98620d632" type="color" value={selectedFrame.borderColor} onChange={(e) => updateElement(selectedFrame.id, { borderColor: e.target.value })} className="w-8 h-6 rounded cursor-pointer" />
-                            <input data-ev-id="ev_2fe0bdce7a" type="range" min="0" max="100" value={selectedFrame.borderOpacity * 100} onChange={(e) => updateElement(selectedFrame.id, { borderOpacity: parseInt(e.target.value) / 100 })} className="flex-1 h-1 bg-gray-700 rounded" />
+                            <input data-ev-id="ev_2fe0bdce7a" type="range" min="0" max="100" value={selectedFrame.borderOpacity * 100} onChange={(e) => updateElement(selectedFrame.id, { borderOpacity: parseInt(e.target.value) / 100 })} className="flex-1 h-1.5 bg-gray-200 rounded-full accent-[#2daea8]" />
                           </div>
                         </div>
                   }
                     </div>
 
                     {/* Shadow Controls */}
-                    <div data-ev-id="ev_46b62782b8" className="border-t border-gray-700 pt-4">
+                    <div data-ev-id="ev_46b62782b8" className="border-t border-gray-200 pt-4">
                       <div data-ev-id="ev_21fece5cf7" className="flex items-center justify-between mb-2">
-                        <label data-ev-id="ev_140683f38a" className="text-xs text-gray-400">{language === 'he' ? 'צל' : 'Shadow'}</label>
-                        <button data-ev-id="ev_97ede25c77" onClick={() => updateElement(selectedFrame.id, { shadowEnabled: !selectedFrame.shadowEnabled })} className={`w-10 h-5 rounded-full transition-colors flex items-center px-0.5 ${selectedFrame.shadowEnabled ? 'bg-green-600 justify-end' : 'bg-gray-600 justify-start'}`}>
+                        <label data-ev-id="ev_140683f38a" className="text-xs text-gray-600 font-medium">{language === 'he' ? 'צל' : 'Shadow'}</label>
+                        <button data-ev-id="ev_97ede25c77" onClick={() => updateElement(selectedFrame.id, { shadowEnabled: !selectedFrame.shadowEnabled })} className={`w-10 h-5 rounded-full transition-colors flex items-center px-0.5 ${selectedFrame.shadowEnabled ? 'bg-[#2daea8] justify-end' : 'bg-gray-300 justify-start'}`}>
                           <div data-ev-id="ev_2b1387ee18" className="w-4 h-4 rounded-full bg-white shadow-sm pointer-events-none" />
                         </button>
                       </div>
                       {selectedFrame.shadowEnabled &&
                   <div data-ev-id="ev_74a6970b24" className="flex flex-col gap-2 mt-2">
                           <div data-ev-id="ev_6613c8336b" className="flex items-center gap-2">
-                            <span data-ev-id="ev_ac95f57407" className="text-xs text-gray-500 w-12">{language === 'he' ? 'טשטוש' : 'Blur'}</span>
-                            <input data-ev-id="ev_f2cfb5a667" type="range" min="0" max="50" value={selectedFrame.shadowBlur} onChange={(e) => updateElement(selectedFrame.id, { shadowBlur: parseInt(e.target.value) })} className="flex-1 h-1 bg-gray-700 rounded" />
+                            <span data-ev-id="ev_ac95f57407" className="text-xs text-gray-600 w-12">{language === 'he' ? 'טשטוש' : 'Blur'}</span>
+                            <input data-ev-id="ev_f2cfb5a667" type="range" min="0" max="50" value={selectedFrame.shadowBlur} onChange={(e) => updateElement(selectedFrame.id, { shadowBlur: parseInt(e.target.value) })} className="flex-1 h-1.5 bg-gray-200 rounded-full accent-[#2daea8]" />
                           </div>
                           <div data-ev-id="ev_1bedbb559f" className="flex items-center gap-2">
-                            <span data-ev-id="ev_b87c63dd70" className="text-xs text-gray-500 w-12">X</span>
-                            <input data-ev-id="ev_2c54388e95" type="range" min="-50" max="50" value={selectedFrame.shadowOffsetX} onChange={(e) => updateElement(selectedFrame.id, { shadowOffsetX: parseInt(e.target.value) })} className="flex-1 h-1 bg-gray-700 rounded" />
+                            <span data-ev-id="ev_b87c63dd70" className="text-xs text-gray-600 w-12">X</span>
+                            <input data-ev-id="ev_2c54388e95" type="range" min="-50" max="50" value={selectedFrame.shadowOffsetX} onChange={(e) => updateElement(selectedFrame.id, { shadowOffsetX: parseInt(e.target.value) })} className="flex-1 h-1.5 bg-gray-200 rounded-full accent-[#2daea8]" />
                           </div>
                           <div data-ev-id="ev_c02d665522" className="flex items-center gap-2">
-                            <span data-ev-id="ev_b80ec72d7c" className="text-xs text-gray-500 w-12">Y</span>
-                            <input data-ev-id="ev_240fe030fa" type="range" min="-50" max="50" value={selectedFrame.shadowOffsetY} onChange={(e) => updateElement(selectedFrame.id, { shadowOffsetY: parseInt(e.target.value) })} className="flex-1 h-1 bg-gray-700 rounded" />
+                            <span data-ev-id="ev_b80ec72d7c" className="text-xs text-gray-600 w-12">Y</span>
+                            <input data-ev-id="ev_240fe030fa" type="range" min="-50" max="50" value={selectedFrame.shadowOffsetY} onChange={(e) => updateElement(selectedFrame.id, { shadowOffsetY: parseInt(e.target.value) })} className="flex-1 h-1.5 bg-gray-200 rounded-full accent-[#2daea8]" />
                           </div>
                           <div data-ev-id="ev_784f663d05" className="flex items-center gap-2">
-                            <span data-ev-id="ev_ce5111b613" className="text-xs text-gray-500 w-12">{language === 'he' ? 'צבע' : 'Color'}</span>
+                            <span data-ev-id="ev_ce5111b613" className="text-xs text-gray-600 w-12">{language === 'he' ? 'צבע' : 'Color'}</span>
                             <input data-ev-id="ev_8112581dda" type="color" value={selectedFrame.shadowColor} onChange={(e) => updateElement(selectedFrame.id, { shadowColor: e.target.value })} className="w-8 h-6 rounded cursor-pointer" />
                           </div>
                         </div>
@@ -2720,13 +2751,13 @@ export default function ClientEditor() {
                     </div>
 
                     {/* Layer Controls */}
-                    <div data-ev-id="ev_b14a62e348" className="border-t border-gray-700 pt-4">
-                      <label data-ev-id="ev_ee4e2c8fa4" className="text-xs text-gray-400 mb-2 block">{language === 'he' ? 'שכבות' : 'Layer'}</label>
+                    <div data-ev-id="ev_b14a62e348" className="border-t border-gray-200 pt-4">
+                      <label data-ev-id="ev_ee4e2c8fa4" className="text-xs text-gray-500 font-medium mb-2 block">{language === 'he' ? 'שכבות' : 'Layer'}</label>
                       <div data-ev-id="ev_fffe42dbad" className="grid grid-cols-4 gap-1">
-                        <button data-ev-id="ev_e10ea44f50" onClick={deleteSelectedElement} className="p-2 rounded bg-red-600/20 text-red-400 hover:bg-red-600/40"><Trash2 className="w-4 h-4 mx-auto" /></button>
-                        <button data-ev-id="ev_8925db4dda" onClick={toggleLock} className={`p-2 rounded ${selectedFrame.locked ? 'bg-yellow-600 text-white' : 'bg-gray-700 text-gray-400'}`}>{selectedFrame.locked ? <Lock className="w-4 h-4 mx-auto" /> : <Unlock className="w-4 h-4 mx-auto" />}</button>
-                        <button data-ev-id="ev_f9ec65b0fe" onClick={sendBackward} className="p-2 rounded bg-gray-700 text-gray-400 hover:bg-gray-600"><ChevronDown className="w-4 h-4 mx-auto" /></button>
-                        <button data-ev-id="ev_f257f4cfee" onClick={bringForward} className="p-2 rounded bg-gray-700 text-gray-400 hover:bg-gray-600"><ChevronUp className="w-4 h-4 mx-auto" /></button>
+                        <button data-ev-id="ev_e10ea44f50" onClick={deleteSelectedElement} className="p-2 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 border border-red-200"><Trash2 className="w-4 h-4 mx-auto" /></button>
+                        <button data-ev-id="ev_8925db4dda" onClick={toggleLock} className={`p-2 rounded-lg border ${selectedFrame.locked ? 'bg-amber-100 text-amber-600 border-amber-200' : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'}`}>{selectedFrame.locked ? <Lock className="w-4 h-4 mx-auto" /> : <Unlock className="w-4 h-4 mx-auto" />}</button>
+                        <button data-ev-id="ev_f9ec65b0fe" onClick={sendBackward} className="p-2 rounded-lg bg-gray-50 text-gray-500 border border-gray-200 hover:bg-gray-100"><ChevronDown className="w-4 h-4 mx-auto" /></button>
+                        <button data-ev-id="ev_f257f4cfee" onClick={bringForward} className="p-2 rounded-lg bg-gray-50 text-gray-500 border border-gray-200 hover:bg-gray-100"><ChevronUp className="w-4 h-4 mx-auto" /></button>
                       </div>
 
 
@@ -2739,62 +2770,62 @@ export default function ClientEditor() {
               <div data-ev-id="ev_10563a6a9c" className="flex flex-col gap-4">
                     {/* Quick Actions */}
                     <div data-ev-id="ev_7311df26aa" className="flex gap-2">
-                      <button data-ev-id="ev_1597139987" onClick={autoFitPhoto} className="flex-1 py-2 px-3 rounded bg-orange-600 text-white text-xs flex items-center justify-center gap-1">
+                      <button data-ev-id="ev_1597139987" onClick={autoFitPhoto} className="flex-1 py-2 px-3 rounded-lg bg-[#2daea8] text-white text-xs font-medium flex items-center justify-center gap-1 hover:bg-[#259691]">
                         <Maximize className="w-4 h-4" />{language === 'he' ? 'התאמה' : 'Auto Fit'}
                       </button>
-                      <button data-ev-id="ev_e77ddebcc5" onClick={() => updateElement(selectedFrame.id, { fitMode: selectedFrame.fitMode === 'fill' ? 'fit' : 'fill' })} className="flex-1 py-2 px-3 rounded bg-gray-700 text-gray-300 text-xs">
+                      <button data-ev-id="ev_e77ddebcc5" onClick={() => updateElement(selectedFrame.id, { fitMode: selectedFrame.fitMode === 'fill' ? 'fit' : 'fill' })} className="flex-1 py-2 px-3 rounded-lg bg-gray-100 text-gray-600 text-xs font-medium border border-gray-200 hover:bg-gray-200">
                         {selectedFrame.fitMode === 'fill' ? 'Fill' : 'Fit'}
                       </button>
                     </div>
 
                     {/* Zoom Slider */}
                     <div data-ev-id="ev_5be42a38df">
-                      <label data-ev-id="ev_7ed088928d" className="text-xs text-gray-400 mb-2 block">{language === 'he' ? 'זום' : 'Zoom'} ({Math.round(selectedFrame.photoScale * 100)}%)</label>
-                      <input data-ev-id="ev_3852dd9965" type="range" min="50" max="200" value={selectedFrame.photoScale * 100} onChange={(e) => updateElement(selectedFrame.id, { photoScale: parseInt(e.target.value) / 100 })} className="w-full h-1 bg-gray-700 rounded" />
+                      <label data-ev-id="ev_7ed088928d" className="text-xs text-gray-500 font-medium mb-2 block">{language === 'he' ? 'זום' : 'Zoom'} ({Math.round(selectedFrame.photoScale * 100)}%)</label>
+                      <input data-ev-id="ev_3852dd9965" type="range" min="50" max="200" value={selectedFrame.photoScale * 100} onChange={(e) => updateElement(selectedFrame.id, { photoScale: parseInt(e.target.value) / 100 })} className="w-full h-1.5 bg-gray-200 rounded-full accent-[#2daea8]" />
                     </div>
 
                     {/* Position X Slider */}
                     <div data-ev-id="ev_position_x">
-                      <label data-ev-id="ev_position_x_label" className="text-xs text-gray-400 mb-2 block">{language === 'he' ? 'מיקום X' : 'Position X'} ({selectedFrame.photoOffsetX}px)</label>
-                      <input data-ev-id="ev_position_x_slider" type="range" min={-Math.round(selectedFrame.width / 2)} max={Math.round(selectedFrame.width / 2)} value={selectedFrame.photoOffsetX} onChange={(e) => updateElement(selectedFrame.id, { photoOffsetX: parseInt(e.target.value) })} className="w-full h-1 bg-gray-700 rounded" />
+                      <label data-ev-id="ev_position_x_label" className="text-xs text-gray-500 font-medium mb-2 block">{language === 'he' ? 'מיקום X' : 'Position X'} ({selectedFrame.photoOffsetX}px)</label>
+                      <input data-ev-id="ev_position_x_slider" type="range" min={-Math.round(selectedFrame.width / 2)} max={Math.round(selectedFrame.width / 2)} value={selectedFrame.photoOffsetX} onChange={(e) => updateElement(selectedFrame.id, { photoOffsetX: parseInt(e.target.value) })} className="w-full h-1.5 bg-gray-200 rounded-full accent-[#2daea8]" />
                     </div>
 
                     {/* Position Y Slider */}
                     <div data-ev-id="ev_position_y">
-                      <label data-ev-id="ev_position_y_label" className="text-xs text-gray-400 mb-2 block">{language === 'he' ? 'מיקום Y' : 'Position Y'} ({selectedFrame.photoOffsetY}px)</label>
-                      <input data-ev-id="ev_position_y_slider" type="range" min={-Math.round(selectedFrame.height / 2)} max={Math.round(selectedFrame.height / 2)} value={selectedFrame.photoOffsetY} onChange={(e) => updateElement(selectedFrame.id, { photoOffsetY: parseInt(e.target.value) })} className="w-full h-1 bg-gray-700 rounded" />
+                      <label data-ev-id="ev_position_y_label" className="text-xs text-gray-500 font-medium mb-2 block">{language === 'he' ? 'מיקום Y' : 'Position Y'} ({selectedFrame.photoOffsetY}px)</label>
+                      <input data-ev-id="ev_position_y_slider" type="range" min={-Math.round(selectedFrame.height / 2)} max={Math.round(selectedFrame.height / 2)} value={selectedFrame.photoOffsetY} onChange={(e) => updateElement(selectedFrame.id, { photoOffsetY: parseInt(e.target.value) })} className="w-full h-1.5 bg-gray-200 rounded-full accent-[#2daea8]" />
                     </div>
 
                     {/* Rotation Slider */}
                     <div data-ev-id="ev_6771463482">
-                      <label data-ev-id="ev_beb2f494bf" className="text-xs text-gray-400 mb-2 block">{language === 'he' ? 'סיבוב' : 'Rotation'} ({selectedFrame.photoRotation}°)</label>
-                      <input data-ev-id="ev_4c8a6ebab6" type="range" min="-180" max="180" value={selectedFrame.photoRotation} onChange={(e) => updateElement(selectedFrame.id, { photoRotation: parseInt(e.target.value) })} className="w-full h-1 bg-gray-700 rounded" />
+                      <label data-ev-id="ev_beb2f494bf" className="text-xs text-gray-500 font-medium mb-2 block">{language === 'he' ? 'סיבוב' : 'Rotation'} ({selectedFrame.photoRotation}°)</label>
+                      <input data-ev-id="ev_4c8a6ebab6" type="range" min="-180" max="180" value={selectedFrame.photoRotation} onChange={(e) => updateElement(selectedFrame.id, { photoRotation: parseInt(e.target.value) })} className="w-full h-1.5 bg-gray-200 rounded-full accent-[#2daea8]" />
                     </div>
 
                     {/* Photo Flip */}
                     <div data-ev-id="ev_dbd9c944f2">
-                      <label data-ev-id="ev_f86c1868da" className="text-xs text-gray-400 mb-2 block">{language === 'he' ? 'היפוך תמונה' : 'Flip Photo'}</label>
+                      <label data-ev-id="ev_f86c1868da" className="text-xs text-gray-500 font-medium mb-2 block">{language === 'he' ? 'היפוך תמונה' : 'Flip Photo'}</label>
                       <div data-ev-id="ev_9799c8827a" className="flex gap-2">
-                        <button data-ev-id="ev_c5b9934f98" onClick={() => updateElement(selectedFrame.id, { photoFlipH: !selectedFrame.photoFlipH })} className={`flex-1 py-2 rounded text-xs flex items-center justify-center gap-1 ${selectedFrame.photoFlipH ? 'bg-orange-600 text-white' : 'bg-gray-700 text-gray-400'}`}>
+                        <button data-ev-id="ev_c5b9934f98" onClick={() => updateElement(selectedFrame.id, { photoFlipH: !selectedFrame.photoFlipH })} className={`flex-1 py-2 rounded-lg text-xs font-medium flex items-center justify-center gap-1 border ${selectedFrame.photoFlipH ? 'bg-[#2daea8] text-white border-[#2daea8]' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'}`}>
                           <FlipHorizontal className="w-4 h-4" />{language === 'he' ? 'אופקי' : 'H'}
                         </button>
-                        <button data-ev-id="ev_31f0d0a9e2" onClick={() => updateElement(selectedFrame.id, { photoFlipV: !selectedFrame.photoFlipV })} className={`flex-1 py-2 rounded text-xs flex items-center justify-center gap-1 ${selectedFrame.photoFlipV ? 'bg-orange-600 text-white' : 'bg-gray-700 text-gray-400'}`}>
+                        <button data-ev-id="ev_31f0d0a9e2" onClick={() => updateElement(selectedFrame.id, { photoFlipV: !selectedFrame.photoFlipV })} className={`flex-1 py-2 rounded-lg text-xs font-medium flex items-center justify-center gap-1 border ${selectedFrame.photoFlipV ? 'bg-[#2daea8] text-white border-[#2daea8]' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'}`}>
                           <FlipVertical className="w-4 h-4" />{language === 'he' ? 'אנכי' : 'V'}
                         </button>
                       </div>
                     </div>
 
                     {/* Reset Photo */}
-                    <button data-ev-id="ev_4cded430d0" onClick={autoFitPhoto} className="w-full py-2 rounded bg-gray-700 text-gray-300 text-xs flex items-center justify-center gap-2 hover:bg-gray-600">
+                    <button data-ev-id="ev_4cded430d0" onClick={autoFitPhoto} className="w-full py-2 rounded-lg bg-gray-100 text-gray-600 text-xs flex items-center justify-center gap-2 hover:bg-gray-200 border border-gray-200">
                       <RefreshCw className="w-4 h-4" />{language === 'he' ? 'איפוס מיקום' : 'Reset Position'}
                     </button>
 
                     {/* Filter Presets */}
-                    <div data-ev-id="ev_41f1ddc9b1" className="border-t border-gray-700 pt-4">
-                      <label data-ev-id="ev_04c436955b" className="text-xs text-gray-400 mb-2 block">{language === 'he' ? 'פילטרים' : 'Filters'}</label>
+                    <div data-ev-id="ev_41f1ddc9b1" className="border-t border-gray-200 pt-4">
+                      <label data-ev-id="ev_04c436955b" className="text-xs text-gray-500 font-medium mb-2 block">{language === 'he' ? 'פילטרים' : 'Filters'}</label>
                       <div data-ev-id="ev_67a3851d15" className="grid grid-cols-3 gap-2">
                         {FILTER_PRESETS.map((filter) =>
-                    <button data-ev-id="ev_fe88bfd0fd" key={filter.id} onClick={() => updateElement(selectedFrame.id, { filterPreset: filter.id })} className={`p-2 rounded text-xs ${selectedFrame.filterPreset === filter.id ? 'bg-orange-600 text-white' : 'bg-gray-700 text-gray-400'}`}>
+                    <button data-ev-id="ev_fe88bfd0fd" key={filter.id} onClick={() => updateElement(selectedFrame.id, { filterPreset: filter.id })} className={`p-2 rounded-lg text-xs font-medium border ${selectedFrame.filterPreset === filter.id ? 'bg-[#2daea8] text-white border-[#2daea8]' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'}`}>
                             {filter.name[language]}
                           </button>
                     )}
@@ -2802,7 +2833,7 @@ export default function ClientEditor() {
                       {selectedFrame.filterPreset !== 'none' &&
                   <div data-ev-id="ev_db655436e0" className="mt-2">
                           <label data-ev-id="ev_632bde586e" className="text-xs text-gray-500">{language === 'he' ? 'עוצמה' : 'Intensity'}</label>
-                          <input data-ev-id="ev_64eebd6a8e" type="range" min="0" max="100" value={selectedFrame.filterIntensity} onChange={(e) => updateElement(selectedFrame.id, { filterIntensity: parseInt(e.target.value) })} className="w-full h-1 bg-gray-700 rounded mt-1" />
+                          <input data-ev-id="ev_64eebd6a8e" type="range" min="0" max="100" value={selectedFrame.filterIntensity} onChange={(e) => updateElement(selectedFrame.id, { filterIntensity: parseInt(e.target.value) })} className="w-full h-1.5 bg-gray-200 rounded-full accent-[#2daea8] mt-1" />
                         </div>
                   }
                     </div>
@@ -2820,7 +2851,7 @@ export default function ClientEditor() {
                     <AdjustmentSlider label={language === 'he' ? 'צלים' : 'Shadows'} value={selectedFrame.adjustments.shadows} onChange={(v) => updateElement(selectedFrame.id, { adjustments: { ...selectedFrame.adjustments, shadows: v } })} icon={Moon} />
                     <AdjustmentSlider label={language === 'he' ? 'חדות' : 'Sharpness'} value={selectedFrame.adjustments.sharpness} onChange={(v) => updateElement(selectedFrame.id, { adjustments: { ...selectedFrame.adjustments, sharpness: v } })} min={0} icon={Focus} />
                     
-                    <button data-ev-id="ev_2f7e9a2157" onClick={resetAdjustments} className="w-full py-2 rounded bg-gray-700 text-gray-300 text-xs flex items-center justify-center gap-2 hover:bg-gray-600 mt-2">
+                    <button data-ev-id="ev_2f7e9a2157" onClick={resetAdjustments} className="w-full py-2 rounded-lg bg-gray-100 text-gray-600 text-xs flex items-center justify-center gap-2 hover:bg-gray-200 border border-gray-200 mt-2">
                       <RefreshCw className="w-4 h-4" />{language === 'he' ? 'איפוס התאמות' : 'Reset Adjustments'}
                     </button>
                   </div>
@@ -2828,15 +2859,15 @@ export default function ClientEditor() {
               </div>
             </> :
 
-          <div data-ev-id="ev_63f7beeb0b" className="flex-1 flex items-center justify-center text-gray-500 p-4 text-center">
+          <div data-ev-id="ev_63f7beeb0b" className="flex-1 flex items-center justify-center text-gray-400 p-4 text-center bg-gray-50">
               <div data-ev-id="ev_d85171e3cd">
-                <MousePointer className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                <p data-ev-id="ev_5b35fe220c" className="text-sm">{language === 'he' ? 'בחר אלמנט לעריכה' : 'Select an element to edit'}</p>
+                <MousePointer className="w-10 h-10 mx-auto mb-3 opacity-40" />
+                <p data-ev-id="ev_5b35fe220c" className="text-sm font-medium">{language === 'he' ? 'בחר אלמנט לעריכה' : 'Select an element to edit'}</p>
               </div>
             </div>
           }
         </aside>
-        )}
+        }
 
       </div>
 
