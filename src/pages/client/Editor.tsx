@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router';
+import { useParams, useNavigate, useLocation } from 'react-router';
 import { motion } from 'framer-motion';
 import { Stage, Layer, Rect, Image as KonvaImage, Text, Transformer, Group, Shape, Line, Circle, Ellipse } from 'react-konva';
 import Konva from 'konva';
@@ -18,6 +18,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useGlobalAssets } from '@/hooks/useGlobalAssets';
 import { supabase } from '@/integrations/supabase/client';
+import { autoPlacePhotos, applyPlacementToSpreads } from '@/lib/autoPlacement';
+import { getThemeById } from '@/lib/themes';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
@@ -1298,8 +1300,16 @@ const shapeIcons: {shape: FrameShape;icon: React.ReactNode;label: {he: string;en
 export default function ClientEditor() {
   const { projectId } = useParams<{projectId: string;}>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t, language, isRTL } = useLanguage();
   const { user } = useAuth();
+
+  // Get navigation state for auto-placement
+  const navigationState = location.state as {
+    setupData?: { themeId?: string; photos?: Array<{ dataUrl: string }> };
+    isNewAlbum?: boolean;
+    autoPlace?: boolean;
+  } | null;
 
   // Global assets from admin
   const {
@@ -1376,6 +1386,9 @@ export default function ClientEditor() {
 
   // Preview mode
   const [showPreview, setShowPreview] = useState(false);
+
+  // Auto-placement tracking
+  const [autoPlacementDone, setAutoPlacementDone] = useState(false);
 
   // Refs
   const stageRef = useRef<any>(null);
@@ -1488,7 +1501,61 @@ export default function ClientEditor() {
     {setLoading(false);}
   };
 
-  const migrateElements = (els: any[]): CanvasElement[] => els.map((el) => {
+  // Auto-placement effect - runs once when new album with autoPlace flag
+  useEffect(() => {
+    if (
+      !loading &&
+      !autoPlacementDone &&
+      navigationState?.autoPlace &&
+      navigationState?.isNewAlbum &&
+      spreads.length > 0 &&
+      project
+    ) {
+      // Get theme from project settings or navigation state
+      const themeId = (project.settings as { themeId?: string })?.themeId || navigationState?.setupData?.themeId;
+      const theme = themeId ? getThemeById(themeId) : null;
+
+      // Get photos from uploaded photos or navigation state
+      const photosToPlace = uploadedPhotos.length > 0
+        ? uploadedPhotos
+        : (navigationState?.setupData?.photos?.map(p => p.dataUrl) || []);
+
+      if (photosToPlace.length > 0) {
+        // Run auto-placement
+        const placementResult = autoPlacePhotos(
+          photosToPlace,
+          spreads.length,
+          theme,
+          CANVAS_WIDTH,
+          CANVAS_HEIGHT,
+          true // skip cover
+        );
+
+        // Apply to spreads
+        const updatedSpreads = applyPlacementToSpreads(
+          spreads as Parameters<typeof applyPlacementToSpreads>[0],
+          placementResult,
+          true
+        );
+
+        setSpreads(updatedSpreads as Spread[]);
+
+        // Save to database
+        if (supabase) {
+          updatedSpreads.forEach(async (spread) => {
+            await supabase
+              .from('spreads')
+              .update({ canvas_data: spread.canvas_data })
+              .eq('id', spread.id);
+          });
+        }
+      }
+
+      setAutoPlacementDone(true);
+    }
+  }, [loading, autoPlacementDone, navigationState, spreads, project, uploadedPhotos, CANVAS_WIDTH, CANVAS_HEIGHT]);
+
+  const migrateElements = (els: CanvasElement[]): CanvasElement[] => els.map((el) => {
     if (el.type === 'image') return createDefaultFrame(el.x, el.y, el.width, el.height, el.src);
     if (el.type === 'frame') {
       return { ...createDefaultFrame(el.x, el.y, el.width, el.height, el.photoSrc || null), ...el, adjustments: el.adjustments || DEFAULT_ADJUSTMENTS, filterPreset: el.filterPreset || 'none', filterIntensity: el.filterIntensity ?? 100, flipH: el.flipH || false, flipV: el.flipV || false, photoRotation: el.photoRotation || 0, photoFlipH: el.photoFlipH || false, photoFlipV: el.photoFlipV || false, shadowOffsetX: el.shadowOffsetX || 0, shadowOffsetY: el.shadowOffsetY || 4, shadowOpacity: el.shadowOpacity || 0.3, borderOpacity: el.borderOpacity || 1 };
