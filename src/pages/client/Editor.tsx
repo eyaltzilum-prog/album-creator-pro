@@ -1990,6 +1990,7 @@ export default function ClientEditor() {
         </div>
         <div data-ev-id="ev_3bc3d4df22" className="flex items-center gap-1">
           <Button variant="ghost" size="sm" onClick={() => setFocusMode(!focusMode)} className={`px-2 ${focusMode ? 'text-primary' : 'text-gray-400'}`} title={language === 'he' ? 'מצב מיקוד' : 'Focus'}><Focus className="w-4 h-4" /></Button>
+          <span data-ev-id="ev_div1" className="w-px h-5 bg-gray-700" />
           <Button variant="ghost" size="sm" onClick={() => setSnappingEnabled(!snappingEnabled)} className={`px-2 ${snappingEnabled ? 'text-primary' : 'text-gray-400'}`}><Magnet className="w-4 h-4" /></Button>
           <Button variant="ghost" size="sm" onClick={() => setGridEnabled(!gridEnabled)} className={`px-2 ${gridEnabled ? 'text-primary' : 'text-gray-400'}`}><Grid3X3 className="w-4 h-4" /></Button>
           <span data-ev-id="ev_div2" className="w-px h-5 bg-gray-700" />
