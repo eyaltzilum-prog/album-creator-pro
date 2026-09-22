@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FolderOpen, Calendar, Clock, AlertCircle, CheckCircle,
-  Edit3, Eye, MessageSquare, ChevronLeft, ChevronRight } from
+  Edit3, Eye, MessageSquare, ChevronLeft, ChevronRight, Plus, BookOpen } from
 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -113,16 +113,24 @@ export default function ClientProjects() {
   return (
     <div data-ev-id="ev_3a5591af6e" className="p-6 max-w-5xl mx-auto">
       {/* Welcome Header */}
-      <div data-ev-id="ev_45dc04f390" className="mb-8">
-        <h1 data-ev-id="ev_3f271d1546" className="text-3xl font-bold text-foreground">
-          {language === 'he' ? `שלום ${profile?.full_name || ''}!` : `Hello ${profile?.full_name || ''}!`}
-        </h1>
-        <p data-ev-id="ev_17599dc5e3" className="text-muted-foreground mt-2">
-          {language === 'he' ?
-          'כאן תוכל לצפות בכל הפרויקטים שלך ולהמשיך לערוך אותם' :
-          'Here you can view and edit all your album projects'
-          }
-        </p>
+      <div data-ev-id="ev_45dc04f390" className="mb-8 flex items-start justify-between">
+        <div data-ev-id="ev_f1dcb291a1">
+          <h1 data-ev-id="ev_3f271d1546" className="text-3xl font-bold text-foreground">
+            {language === 'he' ? `שלום ${profile?.full_name || ''}!` : `Hello ${profile?.full_name || ''}!`}
+          </h1>
+          <p data-ev-id="ev_17599dc5e3" className="text-muted-foreground mt-2">
+            {language === 'he' ?
+            'כאן תוכל לצפות בכל הפרויקטים שלך ולהמשיך לערוך אותם' :
+            'Here you can view and edit all your album projects'
+            }
+          </p>
+        </div>
+        <Link data-ev-id="ev_0f67e94f41" to="/album/new">
+          <Button className="gap-2">
+            <Plus className="w-5 h-5" />
+            {language === 'he' ? 'אלבום חדש' : 'New Album'}
+          </Button>
+        </Link>
       </div>
 
       {/* Projects List */}
@@ -152,11 +160,11 @@ export default function ClientProjects() {
             const canEdit = project.status === 'draft' || project.status === 'changes_requested';
 
             return (
-              <motion.div
-                key={project.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}>
+              <motion.div data-ev-id="ev_4ac229263e"
+              key={project.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}>
 
                   <Card hoverable className="overflow-hidden">
                     <CardContent className="p-0">
@@ -208,11 +216,11 @@ export default function ClientProjects() {
                               </button>
                               <AnimatePresence>
                                 {expandedNotes === project.id &&
-                            <motion.div
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: 'auto' }}
-                              exit={{ opacity: 0, height: 0 }}
-                              className="mt-2 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-800">
+                            <motion.div data-ev-id="ev_dd104cfecb"
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="mt-2 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-800">
 
                                     {project.admin_notes}
                                   </motion.div>
@@ -224,7 +232,7 @@ export default function ClientProjects() {
                           {/* Actions */}
                           <div data-ev-id="ev_e11f3ea766" className="flex items-center gap-3">
                             {canEdit ?
-                          <Link to={`/editor/${project.id}`}>
+                          <Link data-ev-id="ev_5f99f56b4a" to={`/editor/${project.id}`}>
                                 <Button className="gap-2">
                                   <Edit3 className="w-4 h-4" />
                                   {t('continue_editing')}
@@ -232,7 +240,7 @@ export default function ClientProjects() {
                                 </Button>
                               </Link> :
 
-                          <Link to={`/editor/${project.id}`}>
+                          <Link data-ev-id="ev_9687d14b55" to={`/editor/${project.id}`}>
                                 <Button variant="outline" className="gap-2">
                                   <Eye className="w-4 h-4" />
                                   {language === 'he' ? 'צפה באלבום' : 'View Album'}

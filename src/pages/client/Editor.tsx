@@ -1347,7 +1347,7 @@ export default function ClientEditor() {
 
   // New compact UI state
   const [leftDrawerOpen, setLeftDrawerOpen] = useState(false);
-  const [rightPanelOpen, setRightPanelOpen] = useState(true);
+  const [rightPanelOpen, setRightPanelOpen] = useState(false);
   const [filmstripOpen, setFilmstripOpen] = useState(true);
   const [focusMode, setFocusMode] = useState(false);
 
@@ -1989,9 +1989,7 @@ export default function ClientEditor() {
           <span data-ev-id="ev_5c62f73c64" className="text-white font-medium truncate max-w-[200px]">{project?.name}</span>
         </div>
         <div data-ev-id="ev_3bc3d4df22" className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" onClick={fitToViewport} className="text-gray-400 px-2" title={language === 'he' ? 'התאם לחלון' : 'Fit'}><Maximize className="w-4 h-4" /></Button>
           <Button variant="ghost" size="sm" onClick={() => setFocusMode(!focusMode)} className={`px-2 ${focusMode ? 'text-primary' : 'text-gray-400'}`} title={language === 'he' ? 'מצב מיקוד' : 'Focus'}><Focus className="w-4 h-4" /></Button>
-          <span data-ev-id="ev_div1" className="w-px h-5 bg-gray-700" />
           <Button variant="ghost" size="sm" onClick={() => setSnappingEnabled(!snappingEnabled)} className={`px-2 ${snappingEnabled ? 'text-primary' : 'text-gray-400'}`}><Magnet className="w-4 h-4" /></Button>
           <Button variant="ghost" size="sm" onClick={() => setGridEnabled(!gridEnabled)} className={`px-2 ${gridEnabled ? 'text-primary' : 'text-gray-400'}`}><Grid3X3 className="w-4 h-4" /></Button>
           <span data-ev-id="ev_div2" className="w-px h-5 bg-gray-700" />
@@ -2044,13 +2042,6 @@ export default function ClientEditor() {
                   </button>
                 </div>
                 <div data-ev-id="ev_sidebar_content" className="flex-1 overflow-y-auto p-3">
-            {sidebarPanels.map((panel) =>
-              <button data-ev-id="ev_6055402a3e" key={panel.id} onClick={() => setActivePanel(panel.id)} className={`py-3 text-[10px] ${activePanel === panel.id ? 'bg-gray-700 text-white' : 'bg-gray-750 text-gray-400'}`}>
-                <panel.icon className="w-4 h-4 mx-auto mb-1" />{panel.label}
-              </button>
-              )}
-          </div>
-          <div data-ev-id="ev_sidebar_content" className="flex-1 overflow-y-auto p-4">
             {activePanel === 'photos' &&
               <div data-ev-id="ev_photos_panel" className="flex flex-col gap-4">
                 <input data-ev-id="ev_34ba1bf4a1" ref={fileInputRef} type="file" multiple accept="image/*" onChange={handlePhotoUpload} className="hidden" />
@@ -2308,8 +2299,9 @@ export default function ClientEditor() {
           }
         </main>
 
-        {/* Right Sidebar - Properties */}
-        <aside data-ev-id="ev_36aa83ca44" className={`w-80 bg-gray-800 border-${isRTL ? 'r' : 'l'} border-gray-700 flex flex-col ${isRTL ? 'order-first' : ''}`}>
+        {/* Collapsible Right Sidebar - Properties - Only show when element selected */}
+        {!focusMode && (selectedFrame || selectedText) && (
+        <aside data-ev-id="ev_36aa83ca44" className={`w-72 bg-gray-800 border-${isRTL ? 'r' : 'l'} border-gray-700 flex flex-col ${isRTL ? 'order-first' : ''} flex-shrink-0`}>
           {/* TEXT PROPERTIES PANEL */}
           {selectedText ?
           <>
@@ -2709,6 +2701,7 @@ export default function ClientEditor() {
             </div>
           }
         </aside>
+        )}
 
       </div>
 
