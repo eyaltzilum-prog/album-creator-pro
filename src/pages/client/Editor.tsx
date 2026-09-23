@@ -1398,14 +1398,19 @@ export default function ClientEditor() {
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const stageContainerRef = useRef<HTMLDivElement>(null);
 
-  // Compute photo usage counts across all spreads
+  // Compute photo usage counts across all spreads (handles both legacy 'image' and modern 'frame' types)
   const photoUsageCounts = useMemo(() => {
     const counts = new Map<string, number>();
     spreads.forEach((spread) => {
       const objects = spread.canvas_data?.objects || [];
       objects.forEach((obj) => {
+        let src: string | null = null;
         if (obj.type === 'frame' && (obj as FrameElement).photoSrc) {
-          const src = (obj as FrameElement).photoSrc!;
+          src = (obj as FrameElement).photoSrc;
+        } else if (obj.type === 'image' && (obj as LegacyImageElement).src) {
+          src = (obj as LegacyImageElement).src;
+        }
+        if (src && !src.startsWith('data:')) {
           counts.set(src, (counts.get(src) || 0) + 1);
         }
       });
@@ -1583,13 +1588,19 @@ export default function ClientEditor() {
         setUploadedPhotos(photos.map((p) => p.file_url));
       } else {
         // Fallback: extract unique photo URLs from spread elements if client_photos is empty
+        // Handle both legacy 'image' type (with src) and modern 'frame' type (with photoSrc)
         const spreadPhotos = new Set<string>();
         const allSpreads = spreadsData || [];
         allSpreads.forEach((spread: any) => {
           const objects = spread.canvas_data?.objects || [];
           objects.forEach((obj: any) => {
-            if (obj.type === 'frame' && obj.photoSrc && !obj.photoSrc.startsWith('data:')) {
+            // Check for modern frame element with photoSrc
+            if (obj.type === 'frame' && obj.photoSrc && typeof obj.photoSrc === 'string' && obj.photoSrc.length > 0 && !obj.photoSrc.startsWith('data:')) {
               spreadPhotos.add(obj.photoSrc);
+            }
+            // Check for legacy image element with src
+            if (obj.type === 'image' && obj.src && typeof obj.src === 'string' && obj.src.length > 0 && !obj.src.startsWith('data:')) {
+              spreadPhotos.add(obj.src);
             }
           });
         });
