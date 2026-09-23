@@ -1,37 +1,37 @@
 {
-  "summary": "Comprehensive light theme redesign of the customer editor",
+  "summary": "Redesign album creation journey based on new screenshots",
   "todos": [
     {
       "id": 1,
-      "description": "Transform header, main container, and loading states to light theme",
+      "description": "Create Theme Gallery page (Screen A) with categories and cover cards",
       "files": [],
       "status": "complete"
     },
     {
       "id": 2,
-      "description": "Redesign tool rail with icons + labels, and library drawer",
+      "description": "Create Album Setup Modal (Screen B) with sidebar progress and 4 steps",
       "files": [],
       "status": "complete"
     },
     {
       "id": 3,
-      "description": "Light canvas stage with paper styling and filmstrip improvements",
+      "description": "Create Photo Import page (Screen C) with sources and placement options",
       "files": [],
       "status": "complete"
     },
     {
       "id": 4,
-      "description": "Inspector panels and all control styling to light theme",
+      "description": "Wire routes, preserve auth flow, integrate with existing data model",
       "files": [],
       "status": "complete"
     },
     {
       "id": 5,
-      "description": "Validate at 1366x768 and 1920x1080, check legacy canvas 2100x1050",
+      "description": "Validate draft flow at desktop width, test persistence to editor",
       "files": [],
       "status": "complete"
     }
   ],
-  "createdAt": "2026-09-22T18:23:33.321Z",
-  "updatedAt": "2026-09-22T18:34:59.614Z"
+  "createdAt": "2026-09-23T07:13:33.963Z",
+  "updatedAt": "2026-09-23T07:18:53.429Z"
 }
