@@ -1404,11 +1404,14 @@ export default function ClientEditor() {
     spreads.forEach((spread) => {
       const objects = spread.canvas_data?.objects || [];
       objects.forEach((obj) => {
+        if (!obj) return;
         let src: string | null = null;
-        if (obj.type === 'frame' && (obj as FrameElement).photoSrc) {
-          src = (obj as FrameElement).photoSrc;
-        } else if (obj.type === 'image' && (obj as LegacyImageElement).src) {
-          src = (obj as LegacyImageElement).src;
+        if (obj.type === 'frame') {
+          const frame = obj as FrameElement;
+          if (frame.photoSrc) src = frame.photoSrc;
+        } else if (obj.type === 'image') {
+          const img = obj as LegacyImageElement;
+          if (img.src) src = img.src;
         }
         if (src && !src.startsWith('data:')) {
           counts.set(src, (counts.get(src) || 0) + 1);
@@ -2458,7 +2461,7 @@ export default function ClientEditor() {
                   }
 
                 {/* EFFECTS TAB */}
-                {activePropertiesTab === 'effects' && selectedFrame.photoSrc &&
+                {activePropertiesTab === 'effects' &&
                   <div data-ev-id="ev_fc01b6482b" className="flex flex-col gap-4">
                     {/* Text Shadow */}
                     <div data-ev-id="ev_0283557c20" className="border-b border-gray-200 pb-4">
