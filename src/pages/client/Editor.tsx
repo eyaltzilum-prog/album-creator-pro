@@ -2106,254 +2106,68 @@ export default function ClientEditor() {
   const templatesByCount = getTemplatesByCount();
   const templateCounts = Object.keys(templatesByCount).map(Number).sort((a, b) => a - b);
 
-  if (loading) return <div data-ev-id="ev_d99ba1c85c" className="h-screen flex items-center justify-center bg-[#f2f4f5]"><Loader2 className="w-8 h-8 animate-spin text-[#2daea8]" /></div>;
+  // Right panel tab state for new layout
+  const [rightPanelTab, setRightPanelTab] = useState<'photos' | 'templates' | 'backgrounds' | 'decorations'>('photos');
+
+  if (loading) return <div data-ev-id="ev_d99ba1c85c" className="h-screen flex items-center justify-center bg-white"><Loader2 className="w-8 h-8 animate-spin text-[#00a999]" /></div>;
 
   const PrevArrow = isRTL ? ChevronRight : ChevronLeft;
   const NextArrow = isRTL ? ChevronLeft : ChevronRight;
 
   return (
-    <div data-ev-id="ev_429acfd919" className="h-[100dvh] flex flex-col bg-[#f2f4f5] overflow-hidden">
-      {/* Compact Top Toolbar - 56px */}
-      <header data-ev-id="ev_ba397c437d" className="h-14 bg-white border-b border-gray-200 px-4 flex items-center justify-between flex-shrink-0 shadow-sm">
-        <div data-ev-id="ev_476e159c84" className="flex items-center gap-2">
-          <button data-ev-id="ev_c2d9dcdd88" onClick={() => navigate('/projects')} className="flex items-center gap-1.5 text-gray-600 hover:text-gray-900 text-sm font-medium">
-            {isRTL ? <ArrowRight className="w-5 h-5" /> : <ArrowLeft className="w-5 h-5" />}
-            <span data-ev-id="ev_bb7222526a">{t('back')}</span>
+    <div data-ev-id="ev_429acfd919" className="h-[100dvh] flex flex-col bg-white overflow-hidden">
+      {/* Top Header - Redesigned 60px white header with teal accents */}
+      <header data-ev-id="ev_ba397c437d" className="h-[60px] bg-white border-b border-gray-200 px-4 flex items-center justify-between flex-shrink-0">
+        {/* Left side - Primary action pill + project info */}
+        <div data-ev-id="ev_476e159c84" className="flex items-center gap-3" style={{ direction: 'ltr' }}>
+          {canEdit && <button data-ev-id="ev_cdab03aa6e" onClick={() => setShowSubmitModal(true)} className="h-9 px-5 rounded-full bg-[#00a999] hover:bg-[#009688] text-white text-sm font-medium flex items-center gap-2 transition-colors shadow-sm"><Send className="w-4 h-4" />{language === 'he' ? 'שלח להפקה' : 'Submit'}</button>}
+          <div data-ev-id="ev_0bb877e616" className="h-6 w-px bg-gray-200" />
+          <button data-ev-id="ev_24cd389543" onClick={() => navigate('/projects')} className="flex items-center gap-1.5 text-gray-500 hover:text-[#00a999] text-sm font-medium transition-colors">
+            <ArrowLeft className="w-4 h-4" />
+            <span data-ev-id="ev_bb7222526a">{language === 'he' ? 'חזרה' : 'Back'}</span>
           </button>
-          <span data-ev-id="ev_82fa8dc3be" className="text-gray-300">|</span>
-          <span data-ev-id="ev_5c62f73c64" className="text-gray-800 font-semibold truncate max-w-[200px]">{project?.name}</span>
+          <span data-ev-id="ev_5c62f73c64" className="text-gray-700 font-medium truncate max-w-[200px] text-sm">{project?.name}</span>
         </div>
-        <div data-ev-id="ev_3bc3d4df22" className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" onClick={() => setFocusMode(!focusMode)} className={`px-2 ${focusMode ? 'text-[#2daea8]' : 'text-gray-500'} hover:text-[#2daea8] hover:bg-gray-100`} title={language === 'he' ? 'מצב מיקוד' : 'Focus'}><Focus className="w-4 h-4" /></Button>
-          <span data-ev-id="ev_div1" className="w-px h-5 bg-gray-200" />
-          <Button variant="ghost" size="sm" onClick={() => setSnappingEnabled(!snappingEnabled)} className={`px-2 ${snappingEnabled ? 'text-[#2daea8]' : 'text-gray-500'} hover:text-[#2daea8] hover:bg-gray-100`} title={language === 'he' ? 'הצמדה' : 'Snap'}><Magnet className="w-4 h-4" /></Button>
-          <Button variant="ghost" size="sm" onClick={() => setGridEnabled(!gridEnabled)} className={`px-2 ${gridEnabled ? 'text-[#2daea8]' : 'text-gray-500'} hover:text-[#2daea8] hover:bg-gray-100`} title={language === 'he' ? 'רשת' : 'Grid'}><Grid3X3 className="w-4 h-4" /></Button>
-          <span data-ev-id="ev_div2" className="w-px h-5 bg-gray-200" />
-          <Button variant="ghost" size="sm" onClick={() => setShowPreview(true)} className="text-gray-500 px-2 hover:text-[#2daea8] hover:bg-gray-100 gap-1"><Eye className="w-4 h-4" /><span data-ev-id="ev_16b0744e38" className="text-xs hidden sm:inline">{language === 'he' ? 'תצוגה' : 'Preview'}</span></Button>
-          <Button variant="secondary" size="sm" onClick={saveProject} disabled={saving || !canEdit} className="px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 gap-1">{saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4" /><span data-ev-id="ev_963873a043" className="text-xs hidden sm:inline">{language === 'he' ? 'שמור' : 'Save'}</span></>}</Button>
-          {canEdit && <Button size="sm" onClick={() => setShowSubmitModal(true)} className="px-3 bg-[#2daea8] hover:bg-[#259691] text-white gap-1"><Send className="w-4 h-4" /><span data-ev-id="ev_190194268d" className="text-xs hidden sm:inline">{language === 'he' ? 'שלח' : 'Submit'}</span></Button>}
+        {/* Right side - Actions */}
+        <div data-ev-id="ev_3bc3d4df22" className="flex items-center gap-1" style={{ direction: 'ltr' }}>
+          <button data-ev-id="ev_88cc575405" onClick={saveProject} disabled={saving || !canEdit} className="h-8 px-3 rounded-lg text-sm font-medium flex items-center gap-1.5 text-gray-600 hover:text-[#00a999] hover:bg-gray-50 transition-colors disabled:opacity-50" title={language === 'he' ? 'שמור' : 'Save'}>{saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4" /><span data-ev-id="ev_1ec133b8a2" className="hidden sm:inline">{language === 'he' ? 'שמור' : 'Save'}</span></>}</button>
+          <div data-ev-id="ev_f201155277" className="h-5 w-px bg-gray-200 mx-1" />
+          <button data-ev-id="ev_f38633c15d" onClick={() => setShowPreview(true)} className="h-8 px-3 rounded-lg text-sm font-medium flex items-center gap-1.5 text-gray-600 hover:text-[#00a999] hover:bg-gray-50 transition-colors" title={language === 'he' ? 'תצוגה מקדימה' : 'Preview'}><Eye className="w-4 h-4" /><span data-ev-id="ev_a3adc6abee" className="hidden sm:inline">{language === 'he' ? 'תצוגה' : 'Preview'}</span></button>
+          <div data-ev-id="ev_6488d2d73c" className="h-5 w-px bg-gray-200 mx-1" />
+          <button data-ev-id="ev_30a318aee7" onClick={undo} disabled={historyIndex <= 0} className="h-8 w-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-[#00a999] hover:bg-gray-50 transition-colors disabled:opacity-30" title={language === 'he' ? 'בטל' : 'Undo'}><Undo className="w-4 h-4" /></button>
+          <button data-ev-id="ev_c6f9f06533" onClick={redo} disabled={historyIndex >= history.length - 1} className="h-8 w-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-[#00a999] hover:bg-gray-50 transition-colors disabled:opacity-30" title={language === 'he' ? 'חזור' : 'Redo'}><Redo className="w-4 h-4" /></button>
+          <div data-ev-id="ev_1788c8e536" className="h-5 w-px bg-gray-200 mx-1" />
+          <button data-ev-id="ev_300feef6b4" onClick={fitToViewport} className="h-8 w-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-[#00a999] hover:bg-gray-50 transition-colors" title={language === 'he' ? 'התאם לתצוגה' : 'Fit'}><Maximize className="w-4 h-4" /></button>
+          <span data-ev-id="ev_46e0c60085" className="text-xs text-gray-500 w-12 text-center font-medium">{Math.round(zoom * 100)}%</span>
         </div>
       </header>
 
-      <div data-ev-id="ev_main_area" className="flex-1 flex overflow-hidden">
-        {/* Left Icon Rail + Expandable Drawer */}
-        {!focusMode &&
-        <div data-ev-id="ev_left_rail_container" className={`flex ${isRTL ? 'order-last flex-row-reverse' : 'flex-row'}`}>
-            {/* Tool Rail - 68px with icons and labels */}
-            <aside data-ev-id="ev_left_rail" className={`w-[68px] bg-white border-${isRTL ? 'l' : 'r'} border-gray-200 flex flex-col py-2 shadow-sm`}>
-              <div data-ev-id="ev_rail_icons" className="flex flex-col gap-0.5 px-1">
-                {sidebarPanels.map((panel) =>
-              <button
-                data-ev-id="ev_rail_btn"
-                key={panel.id}
-                onClick={() => {
-                  if (activePanel === panel.id && leftDrawerOpen) {
-                    setLeftDrawerOpen(false);
-                  } else {
-                    setActivePanel(panel.id);
-                    setLeftDrawerOpen(true);
-                  }
-                }}
-                className={`py-2 px-1 rounded-lg transition-colors flex flex-col items-center justify-center gap-1 ${
-                activePanel === panel.id && leftDrawerOpen ?
-                'bg-[#e8f7f6] text-[#2daea8]' :
-                'text-gray-500 hover:bg-gray-100 hover:text-gray-700'}`
-                }
-                title={panel.label}>
-
-                    <panel.icon className="w-5 h-5" />
-                    <span data-ev-id="ev_e09aaeca23" className="text-[10px] leading-tight font-medium truncate max-w-full">{panel.shortLabel}</span>
-                  </button>
-              )}
-              </div>
-            </aside>
-            
-            {/* Expandable Drawer - 248px */}
-            {leftDrawerOpen &&
-          <aside data-ev-id="ev_left_drawer" className={`w-62 bg-white border-${isRTL ? 'l' : 'r'} border-gray-200 flex flex-col shadow-sm`}>
-                <div data-ev-id="ev_drawer_header" className="h-11 px-3 flex items-center justify-between border-b border-gray-200">
-                  <span data-ev-id="ev_c4bce0997b" className="text-sm font-semibold text-gray-800">{sidebarPanels.find((p) => p.id === activePanel)?.label}</span>
-                  <button data-ev-id="ev_7c4df16039" onClick={() => setLeftDrawerOpen(false)} className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded">
-                    <ChevronLeft className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} />
-                  </button>
-                </div>
-                <div data-ev-id="ev_sidebar_content" className="flex-1 overflow-y-auto p-3 bg-white">
-            {activePanel === 'photos' &&
-              <div data-ev-id="ev_photos_panel" className="flex flex-col gap-4">
-                <input data-ev-id="ev_34ba1bf4a1" ref={fileInputRef} type="file" multiple accept="image/*" onChange={handlePhotoUpload} className="hidden" />
-                <Button onClick={() => fileInputRef.current?.click()} className="w-full bg-[#2daea8] hover:bg-[#259691] text-white"><Upload className="w-4 h-4 mr-2" />{language === 'he' ? 'הוסף תמונות' : 'Add Photos'}</Button>
-                {uploadedPhotos.length > 0 && <p data-ev-id="ev_112de63edc" className="text-xs text-gray-500">{uploadedPhotos.length} {language === 'he' ? 'תמונות' : 'photos'}</p>}
-                <div data-ev-id="ev_photos_grid" className="grid grid-cols-2 gap-2">
-                  {uploadedPhotos.map((photo, i) =>
-                  <motion.button data-ev-id="ev_d8d35a7b5b" key={i} draggable onDragStart={(e) => handlePhotoDragStart(e as any, photo)} onDragEnd={handlePhotoDragEnd} whileHover={{ scale: 1.02 }} onClick={() => addPhotoToCanvas(photo)} className={`aspect-square rounded-lg overflow-hidden border-2 cursor-grab shadow-sm ${draggedPhotoUrl === photo ? 'border-[#2daea8] opacity-50' : 'border-gray-200 hover:border-[#2daea8]'}`}>
-                      <img data-ev-id="ev_c7a7495f6e" src={photo} alt="" className="w-full h-full object-cover" />
-                    </motion.button>
-                  )}
-                </div>
-                {uploadedPhotos.length === 0 && <div data-ev-id="ev_aa27c3cc71" className="text-center py-8 text-gray-400"><Image className="w-10 h-10 mx-auto mb-2 opacity-50" /><p data-ev-id="ev_b2231d4df7" className="text-sm">{language === 'he' ? 'גרור תמונות לכאן' : 'Drag photos here'}</p></div>}
-              </div>
-              }
-            {activePanel === 'templates' &&
-              <div data-ev-id="ev_templates_panel" className="flex flex-col gap-4">
-                <div data-ev-id="ev_template_tabs" className="flex gap-1 flex-wrap">
-                  {templateCounts.map((count) =>
-                  <button data-ev-id="ev_42cb4e6cd1" key={count} onClick={() => setSelectedTemplateCategory(count)} className={`px-3 py-1.5 rounded-full text-xs font-medium ${selectedTemplateCategory === count ? 'bg-[#2daea8] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>{count} {language === 'he' ? 'תמונות' : 'photos'}</button>
-                  )}
-                </div>
-                <div data-ev-id="ev_template_grid" className="grid grid-cols-2 gap-2">
-                  {(templatesByCount[selectedTemplateCategory] || []).map((template, i) =>
-                  <button data-ev-id="ev_c430d42e1f" key={i} onClick={() => applyTemplate(template)} className="aspect-video bg-gray-50 rounded-lg p-2 hover:bg-gray-100 border border-gray-200 hover:border-[#2daea8] relative transition-colors">
-                      {template.frames.map((frame, fi) =>
-                    <div data-ev-id="ev_073508ecdc" key={fi} className="absolute bg-[#2daea8]/20 border border-[#2daea8]/40" style={{ left: `${frame.x}%`, top: `${frame.y}%`, width: `${frame.width}%`, height: `${frame.height}%` }} />
-                    )}
-                    </button>
-                  )}
-                </div>
-              </div>
-              }
-            {/* Backgrounds Panel */}
-            {activePanel === 'backgrounds' &&
-              <div data-ev-id="ev_2c0c2026c2" className="flex flex-col gap-4">
-                {/* Search */}
-                <div data-ev-id="ev_c3ea6db099" className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input data-ev-id="ev_1927bc4d83"
-                  type="text"
-                  value={bgSearchQuery}
-                  onChange={(e) => setBgSearchQuery(e.target.value)}
-                  placeholder={language === 'he' ? 'חיפוש רקעים...' : 'Search backgrounds...'}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-lg pl-10 pr-4 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-[#2daea8] focus:ring-1 focus:ring-[#2daea8] outline-none" />
-
-                </div>
-                {/* Category tabs */}
-                <div data-ev-id="ev_8f8eef1ee1" className="flex gap-1 flex-wrap">
-                  <button data-ev-id="ev_da5d4055d3" onClick={() => setSelectedBgCategory('all')} className={`px-3 py-1.5 rounded-full text-xs font-medium ${selectedBgCategory === 'all' ? 'bg-[#2daea8] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>{language === 'he' ? 'הכל' : 'All'}</button>
-                  {Object.keys(backgroundsByCategory).map((cat) =>
-                  <button data-ev-id="ev_b0f38e4723" key={cat} onClick={() => setSelectedBgCategory(cat)} className={`px-3 py-1.5 rounded-full text-xs font-medium ${selectedBgCategory === cat ? 'bg-[#2daea8] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>{cat}</button>
-                  )}
-                </div>
-                {/* Backgrounds grid */}
-                <div data-ev-id="ev_b3467d482d" className="grid grid-cols-2 gap-2">
-                  {(backgrounds ?? []).
-                  filter((bg) => selectedBgCategory === 'all' || bg.category === selectedBgCategory).
-                  filter((bg) => !bgSearchQuery || bg.name.toLowerCase().includes(bgSearchQuery.toLowerCase()) || (bg.tags ?? []).some((t) => t.toLowerCase().includes(bgSearchQuery.toLowerCase()))).
-                  map((bg) =>
-                  <motion.button data-ev-id="ev_e4b52943b3"
-                  key={bg.id}
-                  whileHover={{ scale: 1.02 }}
-                  onClick={() => setBackgroundFromAsset(bg)}
-                  className="aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-[#2daea8] shadow-sm"
-                  title={bg.name}>
-
-                      {isColorBackground(bg) ?
-                    <div data-ev-id="ev_d950d454ca" className="w-full h-full" style={{ background: getBackgroundValue(bg) }} /> :
-
-                    <img data-ev-id="ev_67d1fd59f6" src={bg.thumbnail_url || bg.file_url} alt={bg.name} className="w-full h-full object-cover" />
-                    }
-                    </motion.button>
-                  )}
-                </div>
-                {assetsLoading && <div data-ev-id="ev_a8dd1182fc" className="flex justify-center py-4"><Loader2 className="w-6 h-6 animate-spin text-[#2daea8]" /></div>}
-                {!assetsLoading && backgrounds.length === 0 && <p data-ev-id="ev_8afbbd556b" className="text-center text-gray-400 text-sm py-8">{language === 'he' ? 'אין רקעים זמינים' : 'No backgrounds available'}</p>}
-              </div>
-              }
-            {/* Frames Panel */}
-            {activePanel === 'frames' &&
-              <div data-ev-id="ev_85e32e088c" className="flex flex-col gap-4">
-                {/* Search */}
-                <div data-ev-id="ev_cd7dcd5c4d" className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input data-ev-id="ev_2f0a2a2f96"
-                  type="text"
-                  value={frameSearchQuery}
-                  onChange={(e) => setFrameSearchQuery(e.target.value)}
-                  placeholder={language === 'he' ? 'חיפוש מסגרות...' : 'Search frames...'}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-lg pl-10 pr-4 py-2 text-sm text-gray-800 placeholder-gray-400 focus:border-[#2daea8] focus:ring-1 focus:ring-[#2daea8] outline-none" />
-
-                </div>
-                {/* Quick add frame shapes */}
-                <div data-ev-id="ev_0915ec2963" className="flex flex-wrap gap-2">
-                  <button data-ev-id="ev_c2ad018886" onClick={() => addFrame(null, CANVAS_WIDTH / 2 - 100, CANVAS_HEIGHT / 2 - 75, 200, 150)} className="p-3 bg-gray-100 hover:bg-gray-200 rounded-lg border border-gray-200" title={language === 'he' ? 'מלבן' : 'Rectangle'}>
-                    <Square className="w-5 h-5 text-gray-600" />
-                  </button>
-                  <button data-ev-id="ev_00dc7c301c" onClick={() => {const frameId = addFrame(null, CANVAS_WIDTH / 2 - 75, CANVAS_HEIGHT / 2 - 75, 150, 150);if (frameId) updateElement(frameId, { shape: 'circle' });}} className="p-3 bg-gray-100 hover:bg-gray-200 rounded-lg border border-gray-200" title={language === 'he' ? 'עיגול' : 'Circle'}>
-                    <CircleIcon className="w-5 h-5 text-gray-600" />
-                  </button>
-                  <button data-ev-id="ev_eace3ed4a7" onClick={() => {const frameId = addFrame(null, CANVAS_WIDTH / 2 - 75, CANVAS_HEIGHT / 2 - 75, 150, 150);if (frameId) updateElement(frameId, { shape: 'heart' });}} className="p-3 bg-gray-100 hover:bg-gray-200 rounded-lg border border-gray-200" title={language === 'he' ? 'לב' : 'Heart'}>
-                    <Heart className="w-5 h-5 text-gray-600" />
-                  </button>
-                </div>
-                {/* Admin frames grid */}
-                <div data-ev-id="ev_f2f3593a8c" className="grid grid-cols-2 gap-2">
-                  {(globalFrames ?? []).
-                  filter((frame) => !frameSearchQuery || frame.name.toLowerCase().includes(frameSearchQuery.toLowerCase()) || (frame.tags ?? []).some((t) => t.toLowerCase().includes(frameSearchQuery.toLowerCase()))).
-                  map((frame) =>
-                  <motion.button data-ev-id="ev_36aa8c0576"
-                  key={frame.id}
-                  whileHover={{ scale: 1.02 }}
-                  onClick={() => addAdminFrameToCanvas(frame)}
-                  className="aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-[#2daea8] bg-gray-50 p-2 shadow-sm"
-                  title={frame.name}>
-
-                      {frame.thumbnail_url || frame.file_url ?
-                    <img data-ev-id="ev_96a048727b" src={frame.thumbnail_url || frame.file_url} alt={frame.name} className="w-full h-full object-contain" /> :
-
-                    <div data-ev-id="ev_525abccbb3" className="w-full h-full flex items-center justify-center">
-                          <FrameIcon className="w-8 h-8 text-gray-400" />
-                        </div>
-                    }
-                    </motion.button>
-                  )}
-                </div>
-                {assetsLoading && <div data-ev-id="ev_e64c3c0765" className="flex justify-center py-4"><Loader2 className="w-6 h-6 animate-spin text-[#2daea8]" /></div>}
-                {!assetsLoading && globalFrames.length === 0 && <p data-ev-id="ev_c17aba11d6" className="text-center text-gray-400 text-sm py-8">{language === 'he' ? 'אין מסגרות זמינות' : 'No frames available'}</p>}
-              </div>
-              }
-            {activePanel === 'text' &&
-              <div data-ev-id="ev_76cbb5202f" className="flex flex-col gap-4">
-                <Button onClick={addTextElement} className="w-full bg-[#2daea8] hover:bg-[#259691] text-white"><Type className="w-4 h-4 mr-2" />{language === 'he' ? 'הוסף טקסט' : 'Add Text'}</Button>
-                <p data-ev-id="ev_6c865b287a" className="text-xs text-gray-500 text-center">{language === 'he' ? 'לחץ להוספת טקסט לדף' : 'Click to add text to page'}</p>
-              </div>
-              }
-            {activePanel === 'layers' &&
-              <div data-ev-id="ev_77d0e08806" className="flex-1 overflow-y-auto p-2">
-                {[...elements].sort((a, b) => b.zIndex - a.zIndex).map((element) =>
-                <div data-ev-id="ev_77d0e08806" key={element.id} onClick={() => setSelectedElementId(element.id)} className={`group flex items-center gap-2 p-2 rounded-lg cursor-pointer mb-1 ${selectedElementId === element.id ? 'bg-[#e8f7f6] text-[#2daea8] border border-[#2daea8]' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'}`}>
-                    {element.type === 'frame' ? <FrameIcon className="w-4 h-4" /> : <Type className="w-4 h-4" />}
-                    <span data-ev-id="ev_3ea27307ea" className="flex-1 truncate text-sm">{element.name || `${element.type}-${element.id.slice(-4)}`}</span>
-                    <button data-ev-id="ev_4797f33edf" onClick={(e) => {e.stopPropagation();updateCurrentSpread({ objects: elements.filter((el) => el.id !== element.id), background: currentSpread?.canvas_data?.background || '#ffffff' });if (selectedElementId === element.id) setSelectedElementId(null);}} className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-100 rounded">
-                      <Trash2 className="w-3 h-3 text-red-500" />
-                    </button>
-                  </div>
-                )}
-                {elements.length === 0 && <p data-ev-id="ev_0acc92c7ba" className="text-center text-gray-400 text-sm py-8">{language === 'he' ? 'אין שכבות' : 'No layers yet'}</p>}
-              </div>
-              }
-          </div>
-              </aside>
-          }
-          </div>
-        }
-
-        {/* Main Canvas - Maximum Space */}
+      {/* Main Content Area - LTR forced for consistent layout */}
+      <div data-ev-id="ev_main_area" className="flex-1 flex overflow-hidden" style={{ direction: 'ltr' }}>
+        {/* Main Canvas Area */}
         <main data-ev-id="ev_a755909775" className="flex-1 flex flex-col overflow-hidden min-w-0">
-          <div data-ev-id="ev_0c8caac4e0" ref={canvasContainerRef} onDragOver={handleCanvasDragOver} onDragLeave={() => {setIsOverDropZone(false);setHoverFrameId(null);}} onDrop={handleCanvasDrop} className={`flex-1 overflow-hidden bg-[#e8eaed] flex items-center justify-center relative ${isOverDropZone ? 'ring-2 ring-[#2daea8] ring-inset' : ''}`}>
-            {isDraggingPhoto && <div data-ev-id="ev_9f36247ad5" className="absolute inset-0 pointer-events-none z-10 flex items-center justify-center"><div data-ev-id="ev_af642a8a5f" className={`px-4 py-2 rounded-lg shadow-lg ${hoverFrameId ? 'bg-green-500' : 'bg-[#2daea8]'} text-white font-medium`}>{hoverFrameId ? language === 'he' ? 'שחרר' : 'Drop' : language === 'he' ? 'הוסף' : 'Add'}</div></div>}
-            {/* Canvas with paper styling */}
+          <div data-ev-id="ev_0c8caac4e0" ref={canvasContainerRef} onDragOver={handleCanvasDragOver} onDragLeave={() => {setIsOverDropZone(false);setHoverFrameId(null);}} onDrop={handleCanvasDrop} className={`flex-1 overflow-hidden bg-[#f5f6f7] flex items-center justify-center relative ${isOverDropZone ? 'ring-2 ring-[#00a999] ring-inset' : ''}`}>
+            {isDraggingPhoto && <div data-ev-id="ev_9f36247ad5" className="absolute inset-0 pointer-events-none z-10 flex items-center justify-center"><div data-ev-id="ev_af642a8a5f" className={`px-4 py-2 rounded-lg shadow-lg ${hoverFrameId ? 'bg-green-500' : 'bg-[#00a999]'} text-white font-medium`}>{hoverFrameId ? language === 'he' ? 'שחרר' : 'Drop' : language === 'he' ? 'הוסף' : 'Add'}</div></div>}
+            {/* Canvas with paper styling - pure white spread with subtle shadow */}
             <div data-ev-id="ev_28261697dc" ref={stageContainerRef} className="relative flex-shrink-0" style={{ transform: `scale(${zoom})`, transformOrigin: 'center center' }}>
-              {/* Page labels with page numbers */}
-              <div data-ev-id="ev_85b90e6e93" className="absolute -top-7 left-0 right-0 flex justify-between px-6 text-[11px] text-gray-500 font-medium">
-                <span data-ev-id="ev_f427df5290">{currentSpread?.spread_type === 'cover' ? language === 'he' ? 'כריכה אחורית' : 'Back Cover' : isRTL ? `${language === 'he' ? 'עמוד' : 'Page'} ${currentSpreadIndex * 2 + 2}` : `${language === 'he' ? 'עמוד' : 'Page'} ${currentSpreadIndex * 2 + 1}`}</span>
-                <span data-ev-id="ev_4c152fda37">{currentSpread?.spread_type === 'cover' ? language === 'he' ? 'כריכה קדמית' : 'Front Cover' : isRTL ? `${language === 'he' ? 'עמוד' : 'Page'} ${currentSpreadIndex * 2 + 1}` : `${language === 'he' ? 'עמוד' : 'Page'} ${currentSpreadIndex * 2 + 2}`}</span>
+              {/* Page labels above spread */}
+              <div data-ev-id="ev_85b90e6e93" className="absolute -top-8 left-0 right-0 flex justify-between px-8 text-[11px] text-gray-400 font-medium tracking-wide">
+                <span data-ev-id="ev_f427df5290">{currentSpread?.spread_type === 'cover' ? language === 'he' ? 'כריכה אחורית' : 'BACK COVER' : isRTL ? `${language === 'he' ? 'עמוד' : 'PAGE'} ${currentSpreadIndex * 2 + 2}` : `${language === 'he' ? 'עמוד' : 'PAGE'} ${currentSpreadIndex * 2 + 1}`}</span>
+                <span data-ev-id="ev_4c152fda37">{currentSpread?.spread_type === 'cover' ? language === 'he' ? 'כריכה קדמית' : 'FRONT COVER' : isRTL ? `${language === 'he' ? 'עמוד' : 'PAGE'} ${currentSpreadIndex * 2 + 1}` : `${language === 'he' ? 'עמוד' : 'PAGE'} ${currentSpreadIndex * 2 + 2}`}</span>
               </div>
-              {/* Paper shadow and edge */}
-              <div data-ev-id="ev_8eea988776" className="absolute -inset-1 bg-white rounded shadow-lg border border-gray-200" />
-                <Stage ref={stageRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} onClick={(e) => {if (e.target === e.target.getStage()) {setSelectedElementId(null);setEditMode('frame');setIsEditingText(false);}}} className="relative z-10">
+              {/* Paper shadow - clean shadow with gray edge */}
+              <div data-ev-id="ev_8eea988776" className="absolute -inset-2 bg-gray-200 rounded-sm" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }} />
+              {/* White paper surface */}
+              <div data-ev-id="ev_085be1fe02" className="absolute inset-0 bg-white rounded-sm" />
+                <Stage ref={stageRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} onClick={(e) => {if (e.target === e.target.getStage()) {setSelectedElementId(null);setEditMode('frame');setIsEditingText(false);}}} className="relative z-10 rounded-sm overflow-hidden">
                   <Layer>
                     <Rect x={0} y={0} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} fill={currentSpread?.canvas_data?.background || '#ffffff'} />
                     {gridEnabled && Array.from({ length: Math.floor(CANVAS_WIDTH / GRID_SIZE) }).map((_, i) => <Line key={`v${i}`} points={[(i + 1) * GRID_SIZE, 0, (i + 1) * GRID_SIZE, CANVAS_HEIGHT]} stroke="#94a3b8" strokeWidth={1} opacity={0.6} />)}
                     {gridEnabled && Array.from({ length: Math.floor(CANVAS_HEIGHT / GRID_SIZE) }).map((_, i) => <Line key={`h${i}`} points={[0, (i + 1) * GRID_SIZE, CANVAS_WIDTH, (i + 1) * GRID_SIZE]} stroke="#94a3b8" strokeWidth={1} opacity={0.6} />)}
-                    <Rect x={FOLD_LINE_X - 1} y={0} width={2} height={CANVAS_HEIGHT} fill="#cbd5e1" />
+                    {/* Center gutter line with subtle styling */}
+                    <Rect x={FOLD_LINE_X - 1} y={0} width={2} height={CANVAS_HEIGHT} fill="#e5e7eb" />
+                    {/* Dotted safe margin guides */}
+                    <Rect x={40} y={40} width={CANVAS_WIDTH - 80} height={CANVAS_HEIGHT - 80} stroke="#e5e7eb" strokeWidth={1} dash={[4, 4]} fill="transparent" listening={false} />
                     {snapGuides.map((guide, i) => guide.type === 'vertical' ? <Line key={i} points={[guide.position, 0, guide.position, CANVAS_HEIGHT]} stroke={guide.color} strokeWidth={2} dash={[5, 5]} /> : <Line key={i} points={[0, guide.position, CANVAS_WIDTH, guide.position]} stroke={guide.color} strokeWidth={2} dash={[5, 5]} />)}
                     {elements.filter((el) => el.type !== 'group').sort((a, b) => a.zIndex - b.zIndex).map((element) => {
                     if (element.type === 'frame') {
@@ -2373,102 +2187,121 @@ export default function ClientEditor() {
             {isEditingText && selectedText && <TextEditorOverlay element={selectedText} zoom={zoom} stageRef={stageRef} onChange={(attrs) => updateElement(selectedText.id, attrs)} onClose={() => setIsEditingText(false)} language={language} />}
           </div>
           
-          {/* Zoom/Navigation Control Bar - Below Canvas */}
-          <div data-ev-id="ev_control_bar" className="h-10 bg-white border-t border-gray-200 px-4 flex items-center justify-center gap-4 flex-shrink-0">
-            <div data-ev-id="ev_6ade282a77" className="flex items-center gap-1 bg-gray-50 rounded-lg px-2 py-1 border border-gray-200">
-              <button data-ev-id="ev_acfd436dcb" onClick={() => handleManualZoom(Math.max(0.2, zoom - 0.1))} className="p-1 text-gray-500 hover:text-[#2daea8] hover:bg-white rounded"><ZoomOut className="w-4 h-4" /></button>
-              <span data-ev-id="ev_4fa0a2b1c9" className="text-xs text-gray-600 w-12 text-center font-medium">{Math.round(zoom * 100)}%</span>
-              <button data-ev-id="ev_95221fadd3" onClick={() => handleManualZoom(Math.min(2, zoom + 0.1))} className="p-1 text-gray-500 hover:text-[#2daea8] hover:bg-white rounded"><ZoomIn className="w-4 h-4" /></button>
-              <span data-ev-id="ev_70dafcdeab" className="w-px h-4 bg-gray-300 mx-1" />
-              <button data-ev-id="ev_fdb782c58a" onClick={fitToViewport} className="p-1 text-gray-500 hover:text-[#2daea8] hover:bg-white rounded" title={language === 'he' ? 'התאם' : 'Fit'}><Maximize className="w-4 h-4" /></button>
+          {/* Navigation Bar with Spread Chevrons - Below Canvas */}
+          <div data-ev-id="ev_control_bar" className="h-12 bg-white border-t border-gray-100 px-6 flex items-center justify-center gap-6 flex-shrink-0">
+            {/* Previous spread */}
+            <button data-ev-id="ev_a2ea74c444" onClick={() => setCurrentSpreadIndex(Math.max(0, currentSpreadIndex - 1))} disabled={currentSpreadIndex === 0} className="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:text-[#00a999] hover:bg-gray-50 transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-gray-400">
+              <PrevArrow className="w-5 h-5" />
+            </button>
+            {/* Spread indicator */}
+            <div data-ev-id="ev_2567e55272" className="flex items-center gap-3">
+              <span data-ev-id="ev_994b5eebfa" className="text-sm text-gray-700 font-medium">
+                {currentSpread?.spread_type === 'cover' ? language === 'he' ? 'כריכה' : 'Cover' : `${language === 'he' ? 'פרישה' : 'Spread'} ${currentSpreadIndex + 1}`}
+              </span>
+              <span data-ev-id="ev_1507760a10" className="text-xs text-gray-400">/ {spreads.length}</span>
             </div>
-            <span data-ev-id="ev_07d4b1878d" className="text-xs text-gray-400">|</span>
-            <span data-ev-id="ev_9e5a90a55d" className="text-xs text-gray-600 font-medium">
-              {currentSpread?.spread_type === 'cover' ? language === 'he' ? 'כריכה' : 'Cover' : `${language === 'he' ? 'פרישה' : 'Spread'} ${currentSpreadIndex + 1}/${spreads.length}`}
-            </span>
+            {/* Next spread */}
+            <button data-ev-id="ev_769392cf2d" onClick={() => setCurrentSpreadIndex(Math.min(spreads.length - 1, currentSpreadIndex + 1))} disabled={currentSpreadIndex === spreads.length - 1} className="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:text-[#00a999] hover:bg-gray-50 transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-gray-400">
+              <NextArrow className="w-5 h-5" />
+            </button>
           </div>
           
-          {/* Collapsible Spread Filmstrip - 108px total when open */}
+          {/* Spread Filmstrip - 100px with horizontal scrolling thumbnails */}
           {!focusMode &&
-          <div data-ev-id="ev_f487dfbf65" className={`bg-white border-t border-gray-200 flex flex-col transition-all overflow-hidden ${filmstripOpen ? 'h-[108px]' : 'h-8'}`}>
-              {/* Filmstrip Header with Toggle */}
-              <button data-ev-id="ev_eab09567e9"
-            onClick={() => setFilmstripOpen(!filmstripOpen)}
-            className="h-8 px-4 flex items-center justify-between text-gray-600 hover:text-gray-900 flex-shrink-0 border-b border-gray-100">
-
-                <span data-ev-id="ev_8e3d430ab0" className="text-xs font-medium">{language === 'he' ? 'תצוגה מקדימה' : 'Thumbnails'}</span>
-                <ChevronDown className={`w-4 h-4 transition-transform ${filmstripOpen ? '' : 'rotate-180'}`} />
+          <div data-ev-id="ev_f487dfbf65" className="h-[100px] bg-white border-t border-gray-200 flex items-center px-4 gap-3 overflow-hidden">
+              {/* Left scroll arrow */}
+              <button data-ev-id="ev_ecb3eefecd" onClick={() => setCurrentSpreadIndex(Math.max(0, currentSpreadIndex - 1))} disabled={currentSpreadIndex === 0} className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-[#00a999] hover:bg-gray-50 transition-colors disabled:opacity-30 flex-shrink-0">
+                <PrevArrow className="w-4 h-4" />
               </button>
               
-              {/* Spread Thumbnails - horizontal scroll only */}
-              {filmstripOpen &&
-            <div data-ev-id="ev_filmstrip_content" className="h-[76px] px-3 flex items-center gap-2 overflow-x-auto overflow-y-hidden">
-                  <button data-ev-id="ev_2ee7d2018e"
-              onClick={() => setCurrentSpreadIndex(Math.max(0, currentSpreadIndex - 1))}
-              disabled={currentSpreadIndex === 0}
-              className="p-1 text-gray-400 hover:text-[#2daea8] hover:bg-gray-100 rounded disabled:opacity-30 flex-shrink-0">
-
-                    <PrevArrow className="w-4 h-4" />
-                  </button>
+              {/* Scrollable thumbnails */}
+              <div data-ev-id="ev_filmstrip_content" className="flex-1 flex items-center gap-3 overflow-x-auto overflow-y-hidden py-2 px-1">
                   
                   {spreads.map((spread, idx) => {
                 const spreadObjects = spread.canvas_data?.objects || [];
                 return (
-                  <div data-ev-id="ev_de30b6bb04" key={spread.id} className="flex flex-col items-center gap-0.5 flex-shrink-0">
-                  <button data-ev-id="ev_5ad0a1bc88"
+                  <div data-ev-id="ev_42619d8ef2" key={spread.id} className="flex flex-col items-center gap-1 flex-shrink-0">
+                  <button data-ev-id="ev_494192625a"
                     onClick={() => setCurrentSpreadIndex(idx)}
-                    className={`h-[52px] rounded border-2 transition-all overflow-hidden ${
+                    className={`h-[60px] rounded-lg border-2 transition-all overflow-hidden shadow-sm ${
                     idx === currentSpreadIndex ?
-                    'border-[#2daea8] ring-1 ring-[#2daea8]/30' :
+                    'border-[#00a999] ring-2 ring-[#00a999]/20' :
                     'border-gray-200 hover:border-gray-300'}`
                     }
-                    style={{ aspectRatio: `${CANVAS_WIDTH} / ${CANVAS_HEIGHT}`, width: `${52 * (CANVAS_WIDTH / CANVAS_HEIGHT)}px` }}>
-
-                        <div data-ev-id="ev_e7518be3d0"
-                      className="w-full h-full relative"
-                      style={{ background: spread.canvas_data?.background || '#ffffff' }}>
-                          {/* Render actual frame placeholders */}
+                    style={{ aspectRatio: `${CANVAS_WIDTH} / ${CANVAS_HEIGHT}`, width: `${60 * (CANVAS_WIDTH / CANVAS_HEIGHT)}px` }}>
+                        <div data-ev-id="ev_ef1f025f4a" className="w-full h-full relative" style={{ background: spread.canvas_data?.background || '#ffffff' }}>
+                          {/* Render actual frame content with photos */}
                           {spreadObjects.filter((obj: CanvasElement) => obj.type === 'frame').map((frame: CanvasElement) => {
                           const f = frame as FrameElement;
-                          const scale = 52 / CANVAS_HEIGHT;
                           return (
-                            <div data-ev-id="ev_f05e32fddc" key={f.id} className="absolute" style={{
+                            <div data-ev-id="ev_6dac7cdc43" key={f.id} className="absolute" style={{
                               left: `${f.x / CANVAS_WIDTH * 100}%`,
                               top: `${f.y / CANVAS_HEIGHT * 100}%`,
                               width: `${f.width / CANVAS_WIDTH * 100}%`,
                               height: `${f.height / CANVAS_HEIGHT * 100}%`,
-                              background: f.photoSrc ? `url(${f.photoSrc}) center/cover` : '#e5e7eb',
-                              border: '0.5px solid #d1d5db',
-                              borderRadius: f.shape === 'circle' ? '50%' : '1px'
+                              background: f.photoSrc ? `url(${f.photoSrc}) center/cover` : '#f3f4f6',
+                              borderRadius: f.shape === 'circle' ? '50%' : '2px'
                             }} />);
-
                         })}
-                          {/* Center fold line */}
-                          <div data-ev-id="ev_3efce886ee" className="absolute left-1/2 top-0 bottom-0 w-px bg-gray-300/60" />
+                          {/* Render text elements */}
+                          {spreadObjects.filter((obj: CanvasElement) => obj.type === 'text').map((txt: CanvasElement) => {
+                          const t = txt as TextElement;
+                          return (
+                            <div data-ev-id="ev_57a77dbd4c" key={t.id} className="absolute" style={{
+                              left: `${t.x / CANVAS_WIDTH * 100}%`,
+                              top: `${t.y / CANVAS_HEIGHT * 100}%`,
+                              width: `${t.width / CANVAS_WIDTH * 100}%`,
+                              height: `${t.height / CANVAS_HEIGHT * 100}%`,
+                              background: '#d1d5db',
+                              borderRadius: '1px'
+                            }} />);
+                        })}
+                          {/* Center gutter */}
+                          <div data-ev-id="ev_83de7c36a8" className="absolute left-1/2 top-0 bottom-0 w-px bg-gray-200" />
                         </div>
                       </button>
-                  <span data-ev-id="ev_5b3c2ae75b" className={`text-[9px] font-medium leading-none ${idx === currentSpreadIndex ? 'text-[#2daea8]' : 'text-gray-500'}`}>
+                  <span data-ev-id="ev_c284df9b02" className={`text-[10px] font-medium ${idx === currentSpreadIndex ? 'text-[#00a999]' : 'text-gray-400'}`}>
                     {spread.spread_type === 'cover' ? language === 'he' ? 'כריכה' : 'Cover' : isRTL ? `${idx * 2 + 2}-${idx * 2 + 1}` : `${idx * 2 + 1}-${idx * 2 + 2}`}
                   </span>
                 </div>);
               })}
                   
-                  <button data-ev-id="ev_368ca97d4d"
-              onClick={() => setCurrentSpreadIndex(Math.min(spreads.length - 1, currentSpreadIndex + 1))}
-              disabled={currentSpreadIndex === spreads.length - 1}
-              className="p-1 text-gray-400 hover:text-[#2daea8] hover:bg-gray-100 rounded disabled:opacity-30 flex-shrink-0">
-
-                    <NextArrow className="w-4 h-4" />
-                  </button>
-                </div>
-            }
+              </div>
+              
+              {/* Right scroll arrow */}
+              <button data-ev-id="ev_40ba1456a1" onClick={() => setCurrentSpreadIndex(Math.min(spreads.length - 1, currentSpreadIndex + 1))} disabled={currentSpreadIndex === spreads.length - 1} className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-[#00a999] hover:bg-gray-50 transition-colors disabled:opacity-30 flex-shrink-0">
+                <NextArrow className="w-4 h-4" />
+              </button>
             </div>
           }
         </main>
 
-        {/* Collapsible Right Sidebar - Properties - Only show when element selected */}
-        {!focusMode && (selectedFrame || selectedText) &&
-        <aside data-ev-id="ev_36aa83ca44" className={`w-72 bg-white border-${isRTL ? 'r' : 'l'} border-gray-200 flex flex-col ${isRTL ? 'order-first' : ''} flex-shrink-0 shadow-sm`}>
+        {/* Right Panel - Command Rail + Content Panel (always visible when not in focus mode) */}
+        {!focusMode &&
+        <div className="flex flex-shrink-0">
+          {/* Compact Command Rail - Page actions */}
+          <div className="w-12 bg-gray-50 border-l border-gray-200 flex flex-col items-center py-3 gap-1">
+            <button onClick={() => fileInputRef.current?.click()} className="w-9 h-9 rounded-lg flex items-center justify-center text-gray-500 hover:text-[#00a999] hover:bg-white transition-colors" title={language === 'he' ? 'הוסף תמונה' : 'Add Image'}><Image className="w-4 h-4" /></button>
+            <button onClick={addTextElement} className="w-9 h-9 rounded-lg flex items-center justify-center text-gray-500 hover:text-[#00a999] hover:bg-white transition-colors" title={language === 'he' ? 'הוסף טקסט' : 'Add Text'}><Type className="w-4 h-4" /></button>
+            <button onClick={() => addFrame(null, CANVAS_WIDTH / 2 - 100, CANVAS_HEIGHT / 2 - 75, 200, 150)} className="w-9 h-9 rounded-lg flex items-center justify-center text-gray-500 hover:text-[#00a999] hover:bg-white transition-colors" title={language === 'he' ? 'הוסף מסגרת' : 'Add Frame'}><Square className="w-4 h-4" /></button>
+            <div className="w-6 h-px bg-gray-200 my-1" />
+            <button onClick={deleteSelectedElement} disabled={!selectedElementId} className="w-9 h-9 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-white transition-colors disabled:opacity-30" title={language === 'he' ? 'מחק' : 'Delete'}><Trash2 className="w-4 h-4" /></button>
+            <button onClick={() => {if (selectedElement) {const copied = JSON.stringify(selectedElement);localStorage.setItem('copiedElement', copied);}}} disabled={!selectedElementId} className="w-9 h-9 rounded-lg flex items-center justify-center text-gray-400 hover:text-[#00a999] hover:bg-white transition-colors disabled:opacity-30" title={language === 'he' ? 'העתק' : 'Copy'}><Copy className="w-4 h-4" /></button>
+            <div className="w-6 h-px bg-gray-200 my-1" />
+            <button onClick={() => setSnappingEnabled(!snappingEnabled)} className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${snappingEnabled ? 'text-[#00a999] bg-white' : 'text-gray-400 hover:text-[#00a999] hover:bg-white'}`} title={language === 'he' ? 'הצמדה' : 'Snap'}><Magnet className="w-4 h-4" /></button>
+            <button onClick={() => setGridEnabled(!gridEnabled)} className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${gridEnabled ? 'text-[#00a999] bg-white' : 'text-gray-400 hover:text-[#00a999] hover:bg-white'}`} title={language === 'he' ? 'רשת' : 'Grid'}><Grid3X3 className="w-4 h-4" /></button>
+            <div className="flex-1" />
+            <button onClick={() => setRightPanelOpen(!rightPanelOpen)} className="w-9 h-9 rounded-lg flex items-center justify-center text-gray-400 hover:text-[#00a999] hover:bg-white transition-colors" title={rightPanelOpen ? language === 'he' ? 'סגור פאנל' : 'Close Panel' : language === 'he' ? 'פתח פאנל' : 'Open Panel'}>
+              <ChevronLeft className={`w-4 h-4 transition-transform ${rightPanelOpen ? '' : 'rotate-180'}`} />
+            </button>
+          </div>
+          
+          {/* Content Panel with Tabs - 280px */}
+          {rightPanelOpen &&
+          <aside className="w-[280px] bg-white border-l border-gray-200 flex flex-col shadow-sm">
+            {/* Show inspector when element is selected, otherwise show tabs */}
+            {(selectedFrame || selectedText) ?
+            <>
           {/* TEXT PROPERTIES PANEL */}
           {selectedText ?
           <>
@@ -2873,15 +2706,130 @@ export default function ClientEditor() {
               }
               </div>
             </> :
-
-          <div data-ev-id="ev_63f7beeb0b" className="flex-1 flex items-center justify-center text-gray-400 p-4 text-center bg-gray-50">
-              <div data-ev-id="ev_d85171e3cd">
-                <MousePointer className="w-10 h-10 mx-auto mb-3 opacity-40" />
-                <p data-ev-id="ev_5b35fe220c" className="text-sm font-medium">{language === 'he' ? 'בחר אלמנט לעריכה' : 'Select an element to edit'}</p>
+            /* Tabbed Content Panel - Photos, Templates, Backgrounds, Decorations */
+            <>
+              {/* Tab Headers */}
+              <div className="h-12 border-b border-gray-200 flex items-center px-1">
+                {[{id: 'photos', label: language === 'he' ? 'תמונות' : 'Photos', icon: Image},
+                  {id: 'templates', label: language === 'he' ? 'תבניות' : 'Layouts', icon: LayoutTemplate},
+                  {id: 'backgrounds', label: language === 'he' ? 'רקעים' : 'BG', icon: Palette},
+                  {id: 'decorations', label: language === 'he' ? 'קישוט' : 'Decor', icon: Sparkles}].map((tab) => (
+                  <button key={tab.id} onClick={() => setRightPanelTab(tab.id as any)} className={`flex-1 h-full flex flex-col items-center justify-center gap-0.5 text-[10px] font-medium transition-colors border-b-2 ${
+                    rightPanelTab === tab.id ? 'border-[#00a999] text-[#00a999]' : 'border-transparent text-gray-400 hover:text-gray-600'}`}>
+                    <tab.icon className="w-4 h-4" />
+                    {tab.label}
+                  </button>
+                ))}
               </div>
-            </div>
+              
+              {/* Tab Content */}
+              <div className="flex-1 overflow-y-auto p-3">
+                {/* Photos Tab */}
+                {rightPanelTab === 'photos' && (
+                  <div className="flex flex-col gap-3">
+                    <input ref={fileInputRef} type="file" multiple accept="image/*" onChange={handlePhotoUpload} className="hidden" />
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => fileInputRef.current?.click()} className="flex-1 h-9 rounded-lg bg-[#00a999] hover:bg-[#009688] text-white text-sm font-medium flex items-center justify-center gap-1.5 transition-colors">
+                        <Upload className="w-4 h-4" />{language === 'he' ? 'הוסף' : 'Add'}
+                      </button>
+                    </div>
+                    {uploadedPhotos.length > 0 && (
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <span>{uploadedPhotos.length} {language === 'he' ? 'תמונות' : 'photos'}</span>
+                      </div>
+                    )}
+                    <div className="grid grid-cols-2 gap-2">
+                      {uploadedPhotos.map((photo, i) => (
+                        <motion.button key={i} draggable onDragStart={(e) => handlePhotoDragStart(e as any, photo)} onDragEnd={handlePhotoDragEnd} whileHover={{ scale: 1.02 }} onClick={() => addPhotoToCanvas(photo)} className={`aspect-square rounded-lg overflow-hidden border-2 cursor-grab shadow-sm transition-colors ${draggedPhotoUrl === photo ? 'border-[#00a999] opacity-50' : 'border-gray-200 hover:border-[#00a999]'}`}>
+                          <img src={photo} alt="" className="w-full h-full object-cover" />
+                        </motion.button>
+                      ))}
+                    </div>
+                    {uploadedPhotos.length === 0 && (
+                      <div className="text-center py-10 text-gray-400">
+                        <Image className="w-10 h-10 mx-auto mb-2 opacity-40" />
+                        <p className="text-sm">{language === 'he' ? 'גרור תמונות לכאן' : 'Drag photos here'}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* Templates Tab */}
+                {rightPanelTab === 'templates' && (
+                  <div className="flex flex-col gap-3">
+                    <div className="flex gap-1 flex-wrap">
+                      {templateCounts.map((count) => (
+                        <button key={count} onClick={() => setSelectedTemplateCategory(count)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${selectedTemplateCategory === count ? 'bg-[#00a999] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>{count}</button>
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {(templatesByCount[selectedTemplateCategory] || []).map((template, i) => (
+                        <button key={i} onClick={() => applyTemplate(template)} className="aspect-video bg-gray-50 rounded-lg p-2 hover:bg-gray-100 border border-gray-200 hover:border-[#00a999] relative transition-colors">
+                          {template.frames.map((frame, fi) => (
+                            <div key={fi} className="absolute bg-[#00a999]/20 border border-[#00a999]/40" style={{ left: `${frame.x}%`, top: `${frame.y}%`, width: `${frame.width}%`, height: `${frame.height}%` }} />
+                          ))}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Backgrounds Tab */}
+                {rightPanelTab === 'backgrounds' && (
+                  <div className="flex flex-col gap-3">
+                    <div className="flex gap-1 flex-wrap">
+                      <button onClick={() => setSelectedBgCategory('all')} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${selectedBgCategory === 'all' ? 'bg-[#00a999] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>{language === 'he' ? 'הכל' : 'All'}</button>
+                      {Object.keys(backgroundsByCategory).slice(0, 4).map((cat) => (
+                        <button key={cat} onClick={() => setSelectedBgCategory(cat)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${selectedBgCategory === cat ? 'bg-[#00a999] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>{cat}</button>
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {(backgrounds ?? []).filter((bg) => selectedBgCategory === 'all' || bg.category === selectedBgCategory).slice(0, 20).map((bg) => (
+                        <motion.button key={bg.id} whileHover={{ scale: 1.02 }} onClick={() => setBackgroundFromAsset(bg)} className="aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-[#00a999] shadow-sm" title={bg.name}>
+                          {isColorBackground(bg) ?
+                            <div className="w-full h-full" style={{ background: getBackgroundValue(bg) }} /> :
+                            <img src={bg.thumbnail_url || bg.file_url} alt={bg.name} className="w-full h-full object-cover" />
+                          }
+                        </motion.button>
+                      ))}
+                    </div>
+                    {assetsLoading && <div className="flex justify-center py-4"><Loader2 className="w-6 h-6 animate-spin text-[#00a999]" /></div>}
+                  </div>
+                )}
+                
+                {/* Decorations Tab */}
+                {rightPanelTab === 'decorations' && (
+                  <div className="flex flex-col gap-3">
+                    <div className="grid grid-cols-3 gap-2">
+                      {(clipart ?? []).slice(0, 18).map((item) => (
+                        <motion.button key={item.id} whileHover={{ scale: 1.05 }} onClick={() => addDecorationToCanvas(item)} className="aspect-square rounded-lg overflow-hidden border border-gray-200 hover:border-[#00a999] bg-gray-50 p-2" title={item.name}>
+                          {item.thumbnail_url || item.file_url ?
+                            <img src={item.thumbnail_url || item.file_url} alt={item.name} className="w-full h-full object-contain" /> :
+                            <Scissors className="w-6 h-6 text-gray-400 mx-auto" />
+                          }
+                        </motion.button>
+                      ))}
+                      {(stickers ?? []).slice(0, 12).map((item) => (
+                        <motion.button key={item.id} whileHover={{ scale: 1.05 }} onClick={() => addDecorationToCanvas(item)} className="aspect-square rounded-lg overflow-hidden border border-gray-200 hover:border-[#00a999] bg-gray-50 p-2" title={item.name}>
+                          {item.thumbnail_url || item.file_url ?
+                            <img src={item.thumbnail_url || item.file_url} alt={item.name} className="w-full h-full object-contain" /> :
+                            <Smile className="w-6 h-6 text-gray-400 mx-auto" />
+                          }
+                        </motion.button>
+                      ))}
+                    </div>
+                    {assetsLoading && <div className="flex justify-center py-4"><Loader2 className="w-6 h-6 animate-spin text-[#00a999]" /></div>}
+                    {!assetsLoading && (clipart ?? []).length === 0 && (stickers ?? []).length === 0 && (
+                      <p className="text-center text-gray-400 text-sm py-8">{language === 'he' ? 'אין קישוטים זמינים' : 'No decorations available'}</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </>
+            }
+          </aside>
           }
-        </aside>
+        </div>
         }
 
       </div>
