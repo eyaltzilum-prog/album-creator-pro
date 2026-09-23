@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router';
 import { motion } from 'framer-motion';
 import { Stage, Layer, Rect, Image as KonvaImage, Text, Transformer, Group, Shape, Line, Circle, Ellipse } from 'react-konva';
