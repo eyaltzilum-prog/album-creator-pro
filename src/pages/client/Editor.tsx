@@ -533,6 +533,297 @@ function FilteredKonvaImage({
 }
 
 // ============================================================================
+// ROTATION HANDLE COMPONENT - Circular handle with stem above frame
+// ============================================================================
+
+function RotationHandle({
+  element,
+  onChange,
+  language
+}: {
+  element: FrameElement;
+  onChange: (attrs: Partial<FrameElement>) => void;
+  language: 'he' | 'en';
+}) {
+  const [isDragging, setIsDragging] = useState(false);
+  const [startAngle, setStartAngle] = useState(0);
+  const [startRotation, setStartRotation] = useState(0);
+
+  // Calculate handle position (centered above frame, accounting for rotation)
+  const handleDistance = 35; // Distance from frame top to handle center
+  const handleRadius = 12;
+  const stemLength = handleDistance - handleRadius;
+
+  // Center of frame
+  const centerX = element.x + element.width / 2;
+  const centerY = element.y + element.height / 2;
+
+  // Handle position (above frame center, rotated with frame)
+  const angleRad = (element.rotation * Math.PI) / 180;
+  const handleX = centerX - Math.sin(angleRad) * (element.height / 2 + handleDistance);
+  const handleY = centerY - Math.cos(angleRad) * (element.height / 2 + handleDistance);
+
+  // Stem start (top of frame)
+  const stemStartX = centerX - Math.sin(angleRad) * (element.height / 2);
+  const stemStartY = centerY - Math.cos(angleRad) * (element.height / 2);
+
+  const handleDragStart = (e: Konva.KonvaEventObject<DragEvent | TouchEvent>) => {
+    e.cancelBubble = true;
+    setIsDragging(true);
+    const stage = e.target.getStage();
+    if (!stage) return;
+    const pos = stage.getPointerPosition();
+    if (!pos) return;
+    const angle = Math.atan2(pos.x - centerX, -(pos.y - centerY)) * 180 / Math.PI;
+    setStartAngle(angle);
+    setStartRotation(element.rotation);
+  };
+
+  const handleDragMove = (e: Konva.KonvaEventObject<DragEvent | TouchEvent>) => {
+    if (!isDragging) return;
+    e.cancelBubble = true;
+    const stage = e.target.getStage();
+    if (!stage) return;
+    const pos = stage.getPointerPosition();
+    if (!pos) return;
+    const currentAngle = Math.atan2(pos.x - centerX, -(pos.y - centerY)) * 180 / Math.PI;
+    let newRotation = startRotation + (currentAngle - startAngle);
+    // Normalize to -180 to 180
+    while (newRotation > 180) newRotation -= 360;
+    while (newRotation < -180) newRotation += 360;
+    onChange({ rotation: newRotation });
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+  };
+
+  const tooltip = language === 'he' ? 'סובב מסגרת' : 'Rotate frame';
+
+  return (
+    <Group>
+      {/* Stem line connecting frame to handle */}
+      <Line
+        points={[stemStartX, stemStartY, handleX, handleY]}
+        stroke="#00a999"
+        strokeWidth={2}
+        listening={false}
+      />
+      {/* Circular rotation handle */}
+      <Circle
+        x={handleX}
+        y={handleY}
+        radius={handleRadius}
+        fill="#ffffff"
+        stroke="#00a999"
+        strokeWidth={2}
+        draggable
+        onDragStart={handleDragStart}
+        onDragMove={handleDragMove}
+        onDragEnd={handleDragEnd}
+        onTouchStart={handleDragStart}
+        onTouchMove={handleDragMove}
+        onTouchEnd={handleDragEnd}
+        onMouseEnter={(e) => {
+          const stage = e.target.getStage();
+          if (stage) stage.container().style.cursor = 'grab';
+        }}
+        onMouseLeave={(e) => {
+          const stage = e.target.getStage();
+          if (stage) stage.container().style.cursor = 'default';
+        }}
+        title={tooltip}
+      />
+      {/* Rotation arrow icon inside handle */}
+      <Shape
+        x={handleX}
+        y={handleY}
+        sceneFunc={(ctx, shape) => {
+          ctx.beginPath();
+          // Draw circular arrow
+          ctx.arc(0, 0, 6, -Math.PI * 0.7, Math.PI * 0.5, false);
+          ctx.strokeStyle = '#00a999';
+          ctx.lineWidth = 2;
+          ctx.lineCap = 'round';
+          ctx.stroke();
+          // Arrow head
+          const endX = 6 * Math.cos(Math.PI * 0.5);
+          const endY = 6 * Math.sin(Math.PI * 0.5);
+          ctx.beginPath();
+          ctx.moveTo(endX - 3, endY - 2);
+          ctx.lineTo(endX, endY);
+          ctx.lineTo(endX + 3, endY - 2);
+          ctx.stroke();
+        }}
+        listening={false}
+      />
+    </Group>
+  );
+}
+
+// ============================================================================
+// PHOTO PAN HANDLE - Centered four-way move icon inside photo
+// ============================================================================
+
+function PhotoPanHandle({
+  element,
+  imageProps,
+  onPhotoChange,
+  language
+}: {
+  element: FrameElement;
+  imageProps: { x: number; y: number; width: number; height: number } | null;
+  onPhotoChange: (attrs: Partial<FrameElement>) => void;
+  language: 'he' | 'en';
+}) {
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [startOffset, setStartOffset] = useState({ x: 0, y: 0 });
+
+  if (!imageProps) return null;
+
+  // Calculate center of frame
+  const centerX = element.x + element.width / 2;
+  const centerY = element.y + element.height / 2;
+  const iconSize = 32;
+
+  // Calculate max offsets to keep frame filled
+  const maxOffsetX = Math.max(0, (imageProps.width - element.width) / 2);
+  const maxOffsetY = Math.max(0, (imageProps.height - element.height) / 2);
+
+  const handleDragStart = (e: Konva.KonvaEventObject<DragEvent | TouchEvent>) => {
+    e.cancelBubble = true;
+    setIsDragging(true);
+    const stage = e.target.getStage();
+    if (!stage) return;
+    const pos = stage.getPointerPosition();
+    if (!pos) return;
+    setDragStart({ x: pos.x, y: pos.y });
+    setStartOffset({ x: element.photoOffsetX, y: element.photoOffsetY });
+  };
+
+  const handleDragMove = (e: Konva.KonvaEventObject<DragEvent | TouchEvent>) => {
+    if (!isDragging) return;
+    e.cancelBubble = true;
+    const stage = e.target.getStage();
+    if (!stage) return;
+    const pos = stage.getPointerPosition();
+    if (!pos) return;
+    
+    const deltaX = pos.x - dragStart.x;
+    const deltaY = pos.y - dragStart.y;
+    
+    // Calculate new offset clamped to keep frame filled
+    let newOffsetX = startOffset.x + deltaX;
+    let newOffsetY = startOffset.y + deltaY;
+    
+    newOffsetX = Math.max(-maxOffsetX, Math.min(maxOffsetX, newOffsetX));
+    newOffsetY = Math.max(-maxOffsetY, Math.min(maxOffsetY, newOffsetY));
+    
+    onPhotoChange({ photoOffsetX: newOffsetX, photoOffsetY: newOffsetY });
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+  };
+
+  const tooltip = language === 'he' ? 'גרור להזיז את התמונה בתוך המסגרת' : 'Drag to pan photo within frame';
+
+  return (
+    <Group
+      x={centerX}
+      y={centerY}
+      rotation={element.rotation}
+    >
+      {/* Semi-transparent background circle */}
+      <Circle
+        radius={iconSize / 2 + 4}
+        fill="rgba(0, 0, 0, 0.5)"
+        listening={false}
+      />
+      {/* White circle border */}
+      <Circle
+        radius={iconSize / 2 + 2}
+        stroke="#ffffff"
+        strokeWidth={2}
+        fill="transparent"
+        listening={false}
+      />
+      {/* Four-way arrow icon */}
+      <Shape
+        sceneFunc={(ctx) => {
+          const arrowSize = 5;
+          const lineLength = 8;
+          ctx.strokeStyle = '#ffffff';
+          ctx.fillStyle = '#ffffff';
+          ctx.lineWidth = 2;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          
+          // Up arrow
+          ctx.beginPath();
+          ctx.moveTo(0, -lineLength);
+          ctx.lineTo(0, lineLength);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(-arrowSize, -lineLength + arrowSize);
+          ctx.lineTo(0, -lineLength);
+          ctx.lineTo(arrowSize, -lineLength + arrowSize);
+          ctx.stroke();
+          
+          // Down arrow
+          ctx.beginPath();
+          ctx.moveTo(-arrowSize, lineLength - arrowSize);
+          ctx.lineTo(0, lineLength);
+          ctx.lineTo(arrowSize, lineLength - arrowSize);
+          ctx.stroke();
+          
+          // Left arrow
+          ctx.beginPath();
+          ctx.moveTo(-lineLength, 0);
+          ctx.lineTo(lineLength, 0);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(-lineLength + arrowSize, -arrowSize);
+          ctx.lineTo(-lineLength, 0);
+          ctx.lineTo(-lineLength + arrowSize, arrowSize);
+          ctx.stroke();
+          
+          // Right arrow
+          ctx.beginPath();
+          ctx.moveTo(lineLength - arrowSize, -arrowSize);
+          ctx.lineTo(lineLength, 0);
+          ctx.lineTo(lineLength - arrowSize, arrowSize);
+          ctx.stroke();
+        }}
+        listening={false}
+      />
+      {/* Invisible larger hit area for easier interaction */}
+      <Circle
+        radius={iconSize / 2 + 8}
+        fill="transparent"
+        draggable
+        onDragStart={handleDragStart}
+        onDragMove={handleDragMove}
+        onDragEnd={handleDragEnd}
+        onTouchStart={handleDragStart}
+        onTouchMove={handleDragMove}
+        onTouchEnd={handleDragEnd}
+        onMouseEnter={(e) => {
+          const stage = e.target.getStage();
+          if (stage) stage.container().style.cursor = 'move';
+        }}
+        onMouseLeave={(e) => {
+          const stage = e.target.getStage();
+          if (stage) stage.container().style.cursor = 'default';
+        }}
+        title={tooltip}
+      />
+    </Group>
+  );
+}
+
+// ============================================================================
 // FRAME COMPONENT WITH DUAL EDITING - CLEAN SINGLE MASK ARCHITECTURE
 // ============================================================================
 
@@ -928,23 +1219,42 @@ function FrameElementComponent({
 
       }
 
-      {/* Transformer for frame mode */}
+      {/* Transformer for frame mode - teal/white styling per new design */}
       {isSelected && !element.locked && editMode === 'frame' &&
       <Transformer
         ref={trRef}
-        rotateEnabled={true}
+        rotateEnabled={false}
         keepRatio={element.aspectLocked}
-        anchorFill="#22c55e"
-        anchorStroke="#16a34a"
-        anchorSize={10}
-        anchorCornerRadius={2}
-        borderStroke="#22c55e"
+        anchorFill="#ffffff"
+        anchorStroke="#00a999"
+        anchorSize={12}
+        anchorCornerRadius={6}
+        anchorStrokeWidth={2}
+        borderStroke="#00a999"
         borderStrokeWidth={2}
         boundBoxFunc={(oldBox, newBox) =>
         newBox.width < 50 || newBox.height < 50 ? oldBox : newBox
         } />
-
       }
+
+      {/* Custom rotation handle - circular with stem, above frame */}
+      {isSelected && !element.locked && editMode === 'frame' && (
+        <RotationHandle
+          element={element}
+          onChange={onChange}
+          language={language}
+        />
+      )}
+
+      {/* Photo pan handle - centered four-way move icon */}
+      {isSelected && hasPhoto && editMode === 'photo' && (
+        <PhotoPanHandle
+          element={element}
+          imageProps={imageProps}
+          onPhotoChange={onPhotoChange}
+          language={language}
+        />
+      )}
     </>);
 
 }
