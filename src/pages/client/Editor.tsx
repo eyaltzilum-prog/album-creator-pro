@@ -2705,10 +2705,8 @@ export default function ClientEditor() {
                   </div>
                   }
               </div>
-            </> :
-              null
-              }
-            </> :
+            </> : null}
+          </> :
             /* Tabbed Content Panel - Photos, Templates, Backgrounds, Decorations */
             <>
               {/* Tab Headers */}
