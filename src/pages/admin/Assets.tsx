@@ -16,7 +16,7 @@ import { Modal } from '@/components/ui/Modal';
 // ASSET TYPE CONFIG
 // ============================================================================
 
-const assetTypes: {type: AssetType;icon: any;labelHe: string;labelEn: string;}[] = [
+const assetTypes: {type: AssetType;icon: React.ComponentType<{className?: string;}>;labelHe: string;labelEn: string;}[] = [
 { type: 'template', icon: LayoutTemplate, labelHe: 'תבניות', labelEn: 'Templates' },
 { type: 'background', icon: Image, labelHe: 'רקעים', labelEn: 'Backgrounds' },
 { type: 'clipart', icon: Sticker, labelHe: 'קליפארט', labelEn: 'Clip Art' },
@@ -62,7 +62,7 @@ function AssetThumbnail({ asset, className = '' }: AssetThumbnailProps) {
 
   // Check if it's a color/gradient (not an image)
   const url = asset.data_url || asset.file_url || '';
-  
+
   // Only treat as color if it's a valid hex color (#fff, #ffffff, #ffffffff) or gradient
   // Not placeholder URLs like #FRAME_SIMPLE or #STICKER_PACIFIER
   const isValidHexColor = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/.test(url);
@@ -71,16 +71,16 @@ function AssetThumbnail({ asset, className = '' }: AssetThumbnailProps) {
 
   // Get preview URL - check preview_data before data_url
   const previewUrl = asset.thumbnail_url || asset.preview_data || asset.data_url || asset.file_url || '';
-  
+
   // Check if previewUrl is actually a valid image URL (not a placeholder like #BALLOON)
   const isValidImageUrl = previewUrl && (
-    previewUrl.startsWith('data:') ||
-    previewUrl.startsWith('http://') ||
-    previewUrl.startsWith('https://') ||
-    previewUrl.startsWith('/') ||
-    previewUrl.startsWith('blob:')
-  );
-  
+  previewUrl.startsWith('data:') ||
+  previewUrl.startsWith('http://') ||
+  previewUrl.startsWith('https://') ||
+  previewUrl.startsWith('/') ||
+  previewUrl.startsWith('blob:'));
+
+
   const hasValidUrl = isValidImageUrl && !isColor;
 
   // Type colors
@@ -674,15 +674,15 @@ export default function AdminAssets() {
       <div data-ev-id="ev_7d9e17927f" className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
           <AnimatePresence>
             {filteredAssets.map((asset, index) =>
-          <motion.div
-            key={asset.id}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ delay: index * 0.02 }}
-            className={`group relative aspect-square rounded-lg overflow-hidden border transition-colors ${
-            asset.is_visible ? 'border-border hover:border-primary' : 'border-destructive/30 opacity-60'}`
-            }>
+          <motion.div data-ev-id="ev_89e0211304"
+          key={asset.id}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.9 }}
+          transition={{ delay: index * 0.02 }}
+          className={`group relative aspect-square rounded-lg overflow-hidden border transition-colors ${
+          asset.is_visible ? 'border-border hover:border-primary' : 'border-destructive/30 opacity-60'}`
+          }>
 
                 {/* Asset Preview */}
                 <AssetThumbnail asset={asset} />

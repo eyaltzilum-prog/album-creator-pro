@@ -257,7 +257,8 @@ export default function AlbumSetup() {
         }
       });
 
-    } catch (err: any) {
+    } catch (e) {
+      const err = e as Error;
       console.error('Error creating album:', err);
       setError(err.message || (language === 'he' ? 'שגיאה ביצירת האלבום' : 'Error creating album'));
     } finally {

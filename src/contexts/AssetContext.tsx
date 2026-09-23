@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -21,7 +22,7 @@ export interface Asset {
   is_visible: boolean;
   sort_order: number;
   tags: string[];
-  metadata: Record<string, any> | null;
+  metadata: Record<string, unknown> | null;
   created_at: string;
   width: number | null;
   height: number | null;

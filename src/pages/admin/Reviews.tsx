@@ -38,6 +38,7 @@ export default function AdminReviews() {
 
   useEffect(() => {
     fetchProjects();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterStatus]);
 
   const fetchProjects = async () => {
@@ -45,10 +46,10 @@ export default function AdminReviews() {
     setLoading(true);
 
     try {
-      let query = supabase
-        .from('projects')
-        .select('id, name, status, submitted_at, page_count, album_type, client_id')
-        .order('submitted_at', { ascending: false });
+      let query = supabase.
+      from('projects').
+      select('id, name, status, submitted_at, page_count, album_type, client_id').
+      order('submitted_at', { ascending: false });
 
       if (filterStatus !== 'all') {
         query = query.eq('status', filterStatus);
@@ -59,18 +60,18 @@ export default function AdminReviews() {
 
       if (data && data.length > 0) {
         // Fetch client profiles separately
-        const clientIds = [...new Set(data.map(p => p.client_id))];
-        const { data: profiles } = await supabase
-          .from('profiles')
-          .select('id, full_name, email')
-          .in('id', clientIds);
+        const clientIds = [...new Set(data.map((p) => p.client_id))];
+        const { data: profiles } = await supabase.
+        from('profiles').
+        select('id, full_name, email').
+        in('id', clientIds);
 
-        const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
+        const profileMap = new Map(profiles?.map((p) => [p.id, p]) || []);
 
         setProjects(
-          data.map((p: any) => ({
+          data.map((p: {id: string;name: string;client_id: string;status: string;submitted_at: string | null;updated_at: string;}) => ({
             ...p,
-            client: profileMap.get(p.client_id) || { id: p.client_id, full_name: null, email: 'Unknown' },
+            client: profileMap.get(p.client_id) || { id: p.client_id, full_name: null, email: 'Unknown' }
           }))
         );
       } else {
@@ -238,12 +239,12 @@ export default function AdminReviews() {
       <div data-ev-id="ev_242455119b" className="flex flex-col gap-4">
           <AnimatePresence>
             {projects.map((project, index) =>
-          <motion.div
-            key={project.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ delay: index * 0.05 }}>
+          <motion.div data-ev-id="ev_4512157190"
+          key={project.id}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ delay: index * 0.05 }}>
 
                 <Card hoverable>
                   <CardContent className="p-5">

@@ -31,6 +31,7 @@ export default function ClientProjects() {
 
   useEffect(() => {
     fetchProjects();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const fetchProjects = async () => {
@@ -53,7 +54,7 @@ export default function ClientProjects() {
   };
 
   const getStatusConfig = (status: string) => {
-    const configs: {[key: string]: {icon: any;color: string;bgColor: string;label: string;};} = {
+    const configs: {[key: string]: {icon: React.ComponentType<{className?: string}>;color: string;bgColor: string;label: string;};} = {
       draft: {
         icon: Edit3,
         color: 'text-gray-600',

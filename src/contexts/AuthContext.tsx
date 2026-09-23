@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -98,7 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .eq('id', userId)
         .single();
       
-      const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
+      const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as { data: UserProfile | null; error: Error | null };
 
       if (error) throw error;
       

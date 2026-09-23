@@ -446,7 +446,7 @@ function FilteredKonvaImage({
 
 
 }: {image: HTMLImageElement;x: number;y: number;width: number;height: number;adjustments: PhotoAdjustments;filterPreset: FilterPreset;filterIntensity: number;}) {
-  const imageRef = useRef<any>(null);
+  const imageRef = useRef<Konva.Image>(null);
 
   // Apply filters when adjustments or dimensions change
   useEffect(() => {
@@ -457,7 +457,7 @@ function FilteredKonvaImage({
     node.clearCache();
 
     // Build filters array - always include basic filters for adjustments
-    const filters: any[] = [];
+    const filters: ((node: Konva.Node) => void)[] = [];
 
     // Always add adjustment filters
     filters.push(Konva.Filters.Brighten);
@@ -554,9 +554,9 @@ function FrameElementComponent({
   gridEnabled,
   onSnapGuidesChange
 }: {element: FrameElement;image: HTMLImageElement | null;isSelected: boolean;isDropTarget: boolean;editMode: EditMode;onSelect: () => void;onDoubleClick: () => void;onChange: (attrs: Partial<FrameElement>) => void;onPhotoChange: (attrs: Partial<FrameElement>) => void;language: 'he' | 'en';snappingEnabled: boolean;otherElements: CanvasElement[];canvasWidth: number;canvasHeight: number;gridEnabled: boolean;onSnapGuidesChange: (guides: SnapGuide[]) => void;}) {
-  const groupRef = useRef<any>(null);
-  const trRef = useRef<any>(null);
-  const shadowGroupRef = useRef<any>(null);
+  const groupRef = useRef<Konva.Group>(null);
+  const trRef = useRef<Konva.Transformer>(null);
+  const shadowGroupRef = useRef<Konva.Group>(null);
 
   // Attach transformer when selected in frame mode
   useEffect(() => {
@@ -624,17 +624,17 @@ function FrameElementComponent({
   const photoScaleY = element.photoFlipV ? -1 : 1;
 
   // Event handlers
-  const handleSelect = (e: any) => {
+  const handleSelect = (e: Konva.KonvaEventObject<MouseEvent>) => {
     e.cancelBubble = true;
     onSelect();
   };
 
-  const handleDblClick = (e: any) => {
+  const handleDblClick = (e: Konva.KonvaEventObject<MouseEvent>) => {
     e.cancelBubble = true;
     if (element.photoSrc) onDoubleClick();
   };
 
-  const handleDragMove = (e: any) => {
+  const handleDragMove = (e: Konva.KonvaEventObject<DragEvent>) => {
     if (!snappingEnabled) return;
     const node = e.target;
     const { guides, snapX, snapY } = calculateSnapGuides(
@@ -647,7 +647,7 @@ function FrameElementComponent({
     if (snapY !== null) node.y(snapY);
   };
 
-  const handleDragEnd = (e: any) => {
+  const handleDragEnd = (e: Konva.KonvaEventObject<DragEvent>) => {
     onSnapGuidesChange([]);
     onChange({ x: e.target.x(), y: e.target.y() });
   };
@@ -669,7 +669,7 @@ function FrameElementComponent({
   };
 
   // Build clip function based on shape
-  const getClipFunc = (ctx: any) => {
+  const getClipFunc = (ctx: CanvasRenderingContext2D) => {
     const w = element.width;
     const h = element.height;
     if (element.shape === 'circle') {
@@ -958,9 +958,9 @@ function TextElementComponent({ element, isSelected, isEditing, onSelect, onDoub
 
 
 
-}: {element: TextElement;isSelected: boolean;isEditing: boolean;onSelect: () => void;onDoubleClick: () => void;onChange: (attrs: Partial<TextElement>) => void;onStartEdit: () => void;onEndEdit: () => void;language: 'he' | 'en';snappingEnabled: boolean;otherElements: CanvasElement[];canvasWidth: number;canvasHeight: number;gridEnabled: boolean;onSnapGuidesChange: (guides: SnapGuide[]) => void;stageRef: any;}) {
-  const textRef = useRef<any>(null);
-  const trRef = useRef<any>(null);
+}: {element: TextElement;isSelected: boolean;isEditing: boolean;onSelect: () => void;onDoubleClick: () => void;onChange: (attrs: Partial<TextElement>) => void;onStartEdit: () => void;onEndEdit: () => void;language: 'he' | 'en';snappingEnabled: boolean;otherElements: CanvasElement[];canvasWidth: number;canvasHeight: number;gridEnabled: boolean;onSnapGuidesChange: (guides: SnapGuide[]) => void;stageRef: Konva.Stage | null;}) {
+  const textRef = useRef<Konva.Text>(null);
+  const trRef = useRef<Konva.Transformer>(null);
   const lastTapRef = useRef<number>(0);
 
   useEffect(() => {
@@ -980,7 +980,7 @@ function TextElementComponent({ element, isSelected, isEditing, onSelect, onDoub
     lastTapRef.current = now;
   };
 
-  const handleDragMove = (e: any) => {
+  const handleDragMove = (e: Konva.KonvaEventObject<DragEvent>) => {
     if (!snappingEnabled || isEditing) return;
     const node = e.target;
     const { guides, snapX, snapY } = calculateSnapGuides(
@@ -1177,7 +1177,7 @@ function TextElementComponent({ element, isSelected, isEditing, onSelect, onDoub
 function TextEditorOverlay({ element, zoom, stageRef, onChange, onClose, language
 
 
-}: {element: TextElement;zoom: number;stageRef: any;onChange: (attrs: Partial<TextElement>) => void;onClose: () => void;language: 'he' | 'en';}) {
+}: {element: TextElement;zoom: number;stageRef: React.RefObject<Konva.Stage>;onChange: (attrs: Partial<TextElement>) => void;onClose: () => void;language: 'he' | 'en';}) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [text, setText] = useState(element.text);
 
@@ -1205,6 +1205,7 @@ function TextEditorOverlay({ element, zoom, stageRef, onChange, onClose, languag
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleKeyDown);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [text]);
 
   const handleSave = () => {
@@ -1266,7 +1267,7 @@ function TextEditorOverlay({ element, zoom, stageRef, onChange, onClose, languag
 // ADJUSTMENT SLIDER COMPONENT
 // ============================================================================
 
-function AdjustmentSlider({ label, value, onChange, min = -100, max = 100, icon: Icon }: {label: string;value: number;onChange: (v: number) => void;min?: number;max?: number;icon: any;}) {
+function AdjustmentSlider({ label, value, onChange, min = -100, max = 100, icon: Icon }: {label: string;value: number;onChange: (v: number) => void;min?: number;max?: number;icon: React.ComponentType<{className?: string}>;}) {
   return (
     <div data-ev-id="ev_980b92d44a" className="flex flex-col gap-1">
       <div data-ev-id="ev_47a949c195" className="flex items-center justify-between">
@@ -1393,7 +1394,7 @@ export default function ClientEditor() {
   const [autoPlacementDone, setAutoPlacementDone] = useState(false);
 
   // Refs
-  const stageRef = useRef<any>(null);
+  const stageRef = useRef<Konva.Stage>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const stageContainerRef = useRef<HTMLDivElement>(null);
@@ -1554,6 +1555,7 @@ export default function ClientEditor() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showPreview, showFontPicker, historyIndex, history]);
 
   // Load images
@@ -1568,9 +1570,11 @@ export default function ClientEditor() {
         img.src = src;
       }
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spreads, currentSpreadIndex]);
 
   // Fetch project
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {if (projectId) fetchProject();}, [projectId]);
 
   const fetchProject = async () => {
@@ -1580,7 +1584,7 @@ export default function ClientEditor() {
       if (projectData) setProject(projectData as Project);
       const { data: spreadsData } = await supabase.from('spreads').select('*').eq('project_id', projectId).order('spread_index', { ascending: true });
       if (spreadsData?.length) {
-        const migrated = spreadsData.map((s: any) => ({ ...s, canvas_data: { ...s.canvas_data, objects: migrateElements(s.canvas_data?.objects || []) } }));
+        const migrated = spreadsData.map((s: Spread) => ({ ...s, canvas_data: { ...s.canvas_data, objects: migrateElements(s.canvas_data?.objects || []) } }));
         setSpreads(migrated as Spread[]);
       } else {
         const initial = await createInitialSpreads(projectId, projectData?.page_count || 10);
@@ -1594,9 +1598,9 @@ export default function ClientEditor() {
         // Handle both legacy 'image' type (with src) and modern 'frame' type (with photoSrc)
         const spreadPhotos = new Set<string>();
         const allSpreads = spreadsData || [];
-        allSpreads.forEach((spread: any) => {
+        allSpreads.forEach((spread: Spread) => {
           const objects = spread.canvas_data?.objects || [];
-          objects.forEach((obj: any) => {
+          objects.forEach((obj: CanvasElement | null) => {
             // Check for modern frame element with photoSrc
             if (obj.type === 'frame' && obj.photoSrc && typeof obj.photoSrc === 'string' && obj.photoSrc.length > 0 && !obj.photoSrc.startsWith('data:')) {
               spreadPhotos.add(obj.photoSrc);
@@ -1708,6 +1712,7 @@ export default function ClientEditor() {
     if (!canEdit) return;
     const newElements = elements.map((el) => el.id === id ? { ...el, ...attrs } : el);
     updateCurrentSpread({ objects: newElements, background: currentSpread?.canvas_data?.background || '#ffffff' });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [elements, currentSpread, canEdit]);
 
   const updateCurrentSpread = (canvasData: {objects: CanvasElement[];background: string;}) => {
@@ -2761,7 +2766,7 @@ export default function ClientEditor() {
                 { id: 'templates', label: language === 'he' ? 'תבניות' : 'Layouts', icon: LayoutTemplate },
                 { id: 'backgrounds', label: language === 'he' ? 'רקעים' : 'BG', icon: Palette },
                 { id: 'decorations', label: language === 'he' ? 'קישוט' : 'Decor', icon: Sparkles }].map((tab) =>
-                <button data-ev-id="ev_e50a353810" key={tab.id} onClick={() => setRightPanelTab(tab.id as any)} className={`flex-1 h-full flex flex-col items-center justify-center gap-0.5 text-[10px] font-medium transition-colors border-b-2 ${
+                <button data-ev-id="ev_e50a353810" key={tab.id} onClick={() => setRightPanelTab(tab.id as 'photos' | 'templates' | 'backgrounds' | 'decorations')} className={`flex-1 h-full flex flex-col items-center justify-center gap-0.5 text-[10px] font-medium transition-colors border-b-2 ${
                 rightPanelTab === tab.id ? 'border-[#00a999] text-[#00a999]' : 'border-transparent text-gray-400 hover:text-gray-600'}`}>
                     <tab.icon className="w-4 h-4" />
                     {tab.label}
@@ -2789,7 +2794,7 @@ export default function ClientEditor() {
                       {uploadedPhotos.map((photo, i) => {
                       const usageCount = photoUsageCounts.get(photo) || 0;
                       return (
-                        <motion.button data-ev-id="ev_33106bfc90" key={i} draggable onDragStart={(e) => handlePhotoDragStart(e as any, photo)} onDragEnd={handlePhotoDragEnd} whileHover={{ scale: 1.02 }} onClick={() => addPhotoToCanvas(photo)} className={`relative aspect-square rounded-lg overflow-hidden border-2 cursor-grab shadow-sm transition-colors ${draggedPhotoUrl === photo ? 'border-[#00a999] opacity-50' : 'border-gray-200 hover:border-[#00a999]'}`}>
+                        <motion.button data-ev-id="ev_33106bfc90" key={i} draggable onDragStart={(e) => handlePhotoDragStart(e as React.DragEvent<HTMLButtonElement>, photo)} onDragEnd={handlePhotoDragEnd} whileHover={{ scale: 1.02 }} onClick={() => addPhotoToCanvas(photo)} className={`relative aspect-square rounded-lg overflow-hidden border-2 cursor-grab shadow-sm transition-colors ${draggedPhotoUrl === photo ? 'border-[#00a999] opacity-50' : 'border-gray-200 hover:border-[#00a999]'}`}>
                             <img data-ev-id="ev_24c9bede78" src={photo} alt="" className="w-full h-full object-cover" />
                             {usageCount > 0 &&
                           <span data-ev-id="ev_b340c554b9" className="absolute top-1 right-1 bg-[#00a999] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center shadow-sm">

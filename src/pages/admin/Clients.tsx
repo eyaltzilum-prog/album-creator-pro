@@ -111,12 +111,12 @@ export default function AdminClients() {
       eq('role', 'client').
       order('created_at', { ascending: false });
 
-      const { data: profiles, error } = (await Promise.race([fetchPromise, timeoutPromise])) as any;
+      const { data: profiles, error } = (await Promise.race([fetchPromise, timeoutPromise])) as {data: ClientProfile[] | null;error: Error | null;};
 
       if (error) throw error;
 
       // Set clients without project counts first for faster loading
-      const clientsData = (profiles || []).map((profile: any) => ({
+      const clientsData = (profiles || []).map((profile: ClientProfile) => ({
         ...profile,
         project_count: 0
       }));
@@ -164,7 +164,7 @@ export default function AdminClients() {
         }
       });
 
-      const { data: authData, error: authError } = (await Promise.race([signUpPromise, timeoutPromise])) as any;
+      const { data: authData, error: authError } = (await Promise.race([signUpPromise, timeoutPromise])) as {data: {user: {id: string;} | null;} | null;error: Error | null;};
 
       if (authError) throw authError;
 
@@ -173,7 +173,8 @@ export default function AdminClients() {
       setSuccessMessage(language === 'he' ? 'לקוח נוצר בהצלחה!' : 'Client created successfully!');
       setTimeout(() => setSuccessMessage(''), 3000);
       fetchClients();
-    } catch (error: any) {
+    } catch (err) {
+      const error = err as Error;
       setError(error.message || t('error_general'));
     } finally {
       setIsSubmitting(false);
@@ -236,7 +237,8 @@ export default function AdminClients() {
       setSuccessMessage(language === 'he' ? 'פרויקט נוצר בהצלחה!' : 'Project created successfully!');
       setTimeout(() => setSuccessMessage(''), 3000);
       fetchClients();
-    } catch (error: any) {
+    } catch (err) {
+      const error = err as Error;
       console.error('Error creating project:', error);
       setError(error.message || t('error_general'));
     } finally {
@@ -303,9 +305,9 @@ export default function AdminClients() {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
             },
-            body: JSON.stringify({ clientId: clientToRemove.id }),
+            body: JSON.stringify({ clientId: clientToRemove.id })
           }
         );
 
@@ -318,7 +320,8 @@ export default function AdminClients() {
         setPendingDelete(null);
         setSuccessMessage(language === 'he' ? 'הלקוח נמחק לצמיתות' : 'Client permanently deleted');
         setTimeout(() => setSuccessMessage(''), 3000);
-      } catch (error: any) {
+      } catch (err) {
+        const error = err as Error;
         console.error('Error deleting client:', error);
         // Restore client on error
         setClients((prev) => [clientToRemove, ...prev]);
@@ -442,7 +445,8 @@ export default function AdminClients() {
       setProjectToDelete(null);
       setSuccessMessage(language === 'he' ? 'הפרויקט נמחק בהצלחה!' : 'Project deleted successfully!');
       setTimeout(() => setSuccessMessage(''), 3000);
-    } catch (error: any) {
+    } catch (err) {
+      const error = err as Error;
       console.error('Error deleting project:', error);
       setError(error.message || (language === 'he' ? 'שגיאה במחיקת הפרויקט' : 'Error deleting project'));
     } finally {
@@ -492,7 +496,8 @@ export default function AdminClients() {
       setTimeout(() => setSuccessMessage(''), 3000);
       setNewPassword('');
       setShowPasswordField(false);
-    } catch (error: any) {
+    } catch (err) {
+      const error = err as Error;
       console.error('Error resetting password:', error);
       setError(error.message || (language === 'he' ? 'שגיאה באיפוס הסיסמה' : 'Error resetting password'));
     } finally {
@@ -505,11 +510,11 @@ export default function AdminClients() {
       {/* Success Message */}
       <AnimatePresence>
         {successMessage &&
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-6 py-3 bg-green-500 text-white rounded-lg shadow-lg">
+        <motion.div data-ev-id="ev_4f9123641d"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-6 py-3 bg-green-500 text-white rounded-lg shadow-lg">
 
             {successMessage}
           </motion.div>
@@ -561,12 +566,12 @@ export default function AdminClients() {
       <div data-ev-id="ev_958c3d7440" className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <AnimatePresence>
             {filteredClients.map((client, index) =>
-          <motion.div
-            key={client.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ delay: index * 0.05 }}>
+          <motion.div data-ev-id="ev_89d46547eb"
+          key={client.id}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{ delay: index * 0.05 }}>
 
                 <Card hoverable className="h-full">
                   <CardContent className="p-5">
@@ -848,11 +853,11 @@ export default function AdminClients() {
             {/* Projects List (Expandable) */}
             <AnimatePresence>
               {showProjectsList &&
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden">
+            <motion.div data-ev-id="ev_e8bbfef1aa"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden">
 
                   <div data-ev-id="ev_ae516b82db" className="border border-border rounded-lg p-3 bg-muted/30">
                     <h4 data-ev-id="ev_2b48bd27db" className="font-medium text-sm mb-3 flex items-center gap-2">
@@ -1019,11 +1024,11 @@ export default function AdminClients() {
       {/* Undo Delete Toast */}
       <AnimatePresence>
         {pendingDelete &&
-        <motion.div
-          initial={{ opacity: 0, y: 100 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 100 }}
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gray-900 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-4 min-w-[320px]">
+        <motion.div data-ev-id="ev_8855533700"
+        initial={{ opacity: 0, y: 100 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 100 }}
+        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gray-900 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-4 min-w-[320px]">
 
             <div data-ev-id="ev_3d721818a8" className="flex items-center gap-3 flex-1">
               <div data-ev-id="ev_07eb914abb" className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">

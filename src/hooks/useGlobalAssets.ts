@@ -72,7 +72,7 @@ export function useGlobalAssets() {
 
   // Check if a background is a color (solid or gradient)
   const isColorBackground = (asset: Asset): boolean => {
-    const metadata = asset.metadata as Record<string, any> | null;
+    const metadata = asset.metadata as Record<string, unknown> | null;
     return metadata?.type === 'color' || metadata?.type === 'gradient';
   };
 
@@ -83,7 +83,7 @@ export function useGlobalAssets() {
 
   // Get frame metadata
   const getFrameConfig = (asset: Asset) => {
-    const metadata = (asset.metadata || {}) as Record<string, any>;
+    const metadata = (asset.metadata || {}) as Record<string, unknown>;
     return {
       shape: metadata.shape || 'rectangle',
       borderRadius: metadata.borderRadius || 0,

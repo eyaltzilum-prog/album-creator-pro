@@ -238,7 +238,7 @@ const SPREAD_PAGE_HEIGHT = 800;
 const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
 const getClipFunc = (shape: FrameShape, width: number, height: number) => {
-  return (ctx: any) => {
+  return (ctx: CanvasRenderingContext2D) => {
     switch (shape) {
       case 'circle':{
           const radius = Math.min(width, height) / 2;
@@ -443,15 +443,15 @@ function LayerItem({ element, isSelected, onSelect, onToggleVisibility, onToggle
 // FRAME ELEMENT COMPONENT
 // ============================================================================
 
-function FrameElementRenderer({ element, isSelected, onSelect, onChange, stageScale }: {
-  element: FrameElement;
-  isSelected: boolean;
-  onSelect: () => void;
-  onChange: (attrs: Partial<FrameElement>) => void;
-  stageScale: number;
-}) {
-  const groupRef = useRef<any>(null);
-  const trRef = useRef<any>(null);
+function FrameElementRenderer({ element, isSelected, onSelect, onChange, stageScale
+
+
+
+
+
+}: {element: FrameElement;isSelected: boolean;onSelect: () => void;onChange: (attrs: Partial<FrameElement>) => void;stageScale: number;}) {
+  const groupRef = useRef<Konva.Group>(null);
+  const trRef = useRef<Konva.Transformer>(null);
 
   useEffect(() => {
     if (isSelected && trRef.current && groupRef.current) {
@@ -519,8 +519,8 @@ function TextElementRenderer({ element, isSelected, onSelect, onChange, stageSca
 
 
 }: {element: TextElement;isSelected: boolean;onSelect: () => void;onChange: (attrs: Partial<TextElement>) => void;stageScale: number;}) {
-  const textRef = useRef<any>(null);
-  const trRef = useRef<any>(null);
+  const textRef = useRef<Konva.Text>(null);
+  const trRef = useRef<Konva.Transformer>(null);
 
   useEffect(() => {
     if (isSelected && trRef.current && textRef.current) {
@@ -594,7 +594,7 @@ export default function TemplateBuilder() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { templateId } = useParams();
-  const stageRef = useRef<any>(null);
+  const stageRef = useRef<Konva.Stage>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const bgInputRef = useRef<HTMLInputElement>(null);
   const fontInputRef = useRef<HTMLInputElement>(null);
@@ -989,7 +989,7 @@ export default function TemplateBuilder() {
         {/* Left Panel */}
         <AnimatePresence>
           {leftPanelOpen &&
-          <motion.aside initial={{ width: 0, opacity: 0 }} animate={{ width: 280, opacity: 1 }} exit={{ width: 0, opacity: 0 }} className="bg-gray-900 border-r border-gray-800 flex flex-col overflow-hidden">
+          <motion.aside data-ev-id="ev_535a994ab3" initial={{ width: 0, opacity: 0 }} animate={{ width: 280, opacity: 1 }} exit={{ width: 0, opacity: 0 }} className="bg-gray-900 border-r border-gray-800 flex flex-col overflow-hidden">
               {/* Tabs */}
               <div data-ev-id="ev_7779a9709f" className="flex border-b border-gray-800">
                 {(['elements', 'layers', 'pages', 'fonts'] as const).map((tab) =>
@@ -1000,8 +1000,8 @@ export default function TemplateBuilder() {
 
                     {tab === 'elements' ? t('אלמנטים', 'Elements') : tab === 'layers' ? t('שכבות', 'Layers') : tab === 'pages' ? t('עמודים', 'Pages') : t('גופנים', 'Fonts')}
                   </button>
-                )
-                }
+              )
+              }
               </div>
 
               <div data-ev-id="ev_7e9b040cc8" className="flex-1 overflow-y-auto p-4">
@@ -1030,7 +1030,7 @@ export default function TemplateBuilder() {
                     <div data-ev-id="ev_eedf901949" className="h-px bg-gray-800 my-2" />
                     <p data-ev-id="ev_bc206f4b3b" className="text-xs text-gray-500 uppercase tracking-wider">{t('צורות', 'Shapes')}</p>
                     <div data-ev-id="ev_5c823cef5e" className="grid grid-cols-4 gap-2">
-                      {([{ shape: 'rectangle', icon: Square }, { shape: 'circle', icon: CircleIcon }, { shape: 'heart', icon: Heart }, { shape: 'star', icon: Star }] as {shape: FrameShape;icon: any;}[]).map(({ shape, icon: Icon }) =>
+                      {([{ shape: 'rectangle', icon: Square }, { shape: 'circle', icon: CircleIcon }, { shape: 'heart', icon: Heart }, { shape: 'star', icon: Star }] as {shape: FrameShape;icon: React.ComponentType<{className?: string}>;}[]).map(({ shape, icon: Icon }) =>
                   <button data-ev-id="ev_95c23d62f5"
                   key={shape}
                   onClick={() => {
@@ -1217,7 +1217,7 @@ export default function TemplateBuilder() {
         {/* Right Panel */}
         <AnimatePresence>
           {rightPanelOpen &&
-          <motion.aside initial={{ width: 0, opacity: 0 }} animate={{ width: 320, opacity: 1 }} exit={{ width: 0, opacity: 0 }} className="bg-gray-900 border-l border-gray-800 flex flex-col overflow-hidden">
+          <motion.aside data-ev-id="ev_b9d46fa9a1" initial={{ width: 0, opacity: 0 }} animate={{ width: 320, opacity: 1 }} exit={{ width: 0, opacity: 0 }} className="bg-gray-900 border-l border-gray-800 flex flex-col overflow-hidden">
               {/* Tabs */}
               <div data-ev-id="ev_1d335801ec" className="flex border-b border-gray-800">
                 {(['properties', 'permissions', 'background'] as const).map((tab) =>
@@ -1247,7 +1247,7 @@ export default function TemplateBuilder() {
                         <div data-ev-id="ev_e2a0d94e03">
                           <label data-ev-id="ev_1bc02cb0ce" className="text-xs text-gray-500 uppercase tracking-wider">{t('צורה', 'Shape')}</label>
                           <div data-ev-id="ev_1cfef951d2" className="grid grid-cols-4 gap-2 mt-2">
-                            {([{ shape: 'rectangle', icon: Square }, { shape: 'circle', icon: CircleIcon }, { shape: 'heart', icon: Heart }, { shape: 'star', icon: Star }] as {shape: FrameShape;icon: any;}[]).map(({ shape, icon: Icon }) =>
+                            {([{ shape: 'rectangle', icon: Square }, { shape: 'circle', icon: CircleIcon }, { shape: 'heart', icon: Heart }, { shape: 'star', icon: Star }] as {shape: FrameShape;icon: React.ComponentType<{className?: string}>;}[]).map(({ shape, icon: Icon }) =>
                       <button data-ev-id="ev_5e5a3e37c8" key={shape} onClick={() => updateElement(selectedElement.id, { shape })} className={`aspect-square rounded-lg flex items-center justify-center transition-colors ${(selectedElement as FrameElement).shape === shape ? 'bg-primary text-white' : 'bg-gray-800 hover:bg-gray-700 text-gray-400'}`}>
                                 <Icon className="w-5 h-5" />
                               </button>
@@ -1318,7 +1318,7 @@ export default function TemplateBuilder() {
                         <div data-ev-id="ev_75318d02aa">
                           <label data-ev-id="ev_1eba1f99b6" className="text-xs text-gray-500 uppercase tracking-wider">{t('יישור', 'Alignment')}</label>
                           <div data-ev-id="ev_eb890ae68a" className="flex gap-2 mt-2">
-                            {([{ align: 'left', icon: AlignLeft }, { align: 'center', icon: AlignCenter }, { align: 'right', icon: AlignRight }] as {align: TextAlign;icon: any;}[]).map(({ align, icon: Icon }) =>
+                            {([{ align: 'left', icon: AlignLeft }, { align: 'center', icon: AlignCenter }, { align: 'right', icon: AlignRight }] as {align: TextAlign;icon: React.ComponentType<{className?: string}>;}[]).map(({ align, icon: Icon }) =>
                       <button data-ev-id="ev_7d7043ae97" key={align} onClick={() => updateElement(selectedElement.id, { textAlign: align })} className={`flex-1 p-2 rounded-lg flex items-center justify-center ${(selectedElement as TextElement).textAlign === align ? 'bg-primary text-white' : 'bg-gray-800 hover:bg-gray-700 text-gray-400'}`}>
                                 <Icon className="w-4 h-4" />
                               </button>

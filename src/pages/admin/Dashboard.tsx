@@ -66,7 +66,7 @@ export default function AdminDashboard() {
 
         const profileMap = new Map(profiles?.map((p) => [p.id, p]) || []);
 
-        setRecentSubmissions(submissions.map((s: any) => ({
+        setRecentSubmissions(submissions.map((s: {id: string;name: string;client_id: string;submitted_at: string;}) => ({
           id: s.id,
           project_name: s.name,
           client_name: profileMap.get(s.client_id)?.full_name || profileMap.get(s.client_id)?.email || 'Unknown',
@@ -107,10 +107,10 @@ export default function AdminDashboard() {
 
       {/* Stats Cards */}
       <div data-ev-id="ev_27deaedcf5" className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}>
+        <motion.div data-ev-id="ev_958386a120"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}>
 
           <Card variant="elevated" className="relative overflow-hidden">
             <div data-ev-id="ev_1da5fc2e58" className="absolute top-0 left-0 w-full h-1 bg-primary" />
@@ -128,10 +128,10 @@ export default function AdminDashboard() {
           </Card>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}>
+        <motion.div data-ev-id="ev_09007cccb3"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}>
 
           <Card variant="elevated" className="relative overflow-hidden">
             <div data-ev-id="ev_d5a48c9b1e" className="absolute top-0 left-0 w-full h-1 bg-warning" />
@@ -149,10 +149,10 @@ export default function AdminDashboard() {
           </Card>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}>
+        <motion.div data-ev-id="ev_2072d28b13"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}>
 
           <Card variant="elevated" className="relative overflow-hidden">
             <div data-ev-id="ev_dd6e88cf03" className="absolute top-0 left-0 w-full h-1 bg-success" />
@@ -172,29 +172,29 @@ export default function AdminDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.35 }}>
+      <motion.div data-ev-id="ev_0a7a56f8f1"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.35 }}>
         <Card>
           <CardHeader>
             <CardTitle>פעולות מהירות</CardTitle>
           </CardHeader>
           <CardContent>
             <div data-ev-id="ev_fd6a71b6b9" className="flex flex-wrap gap-3">
-              <Link to="/admin/templates/builder">
+              <Link data-ev-id="ev_0a4c75e16a" to="/admin/templates/builder">
                 <Button variant="outline" className="gap-2">
                   <LayoutTemplate className="w-4 h-4" />
                   <span data-ev-id="ev_ae8bcf69ae">בונה תבניות</span>
                 </Button>
               </Link>
-              <Link to="/admin/clients">
+              <Link data-ev-id="ev_f88c8cc11b" to="/admin/clients">
                 <Button variant="outline" className="gap-2">
                   <Users className="w-4 h-4" />
                   <span data-ev-id="ev_c73265798d">ניהול לקוחות</span>
                 </Button>
               </Link>
-              <Link to="/admin/assets">
+              <Link data-ev-id="ev_0eda1c5684" to="/admin/assets">
                 <Button variant="outline" className="gap-2">
                   <Plus className="w-4 h-4" />
                   <span data-ev-id="ev_7010afce9c">העלאת נכסים</span>
@@ -206,15 +206,15 @@ export default function AdminDashboard() {
       </motion.div>
 
       {/* Recent Submissions */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}>
+      <motion.div data-ev-id="ev_1d1f73dd63"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.4 }}>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-border">
             <CardTitle>{t('recent_submissions')}</CardTitle>
-            <Link to="/admin/reviews">
+            <Link data-ev-id="ev_258a28971f" to="/admin/reviews">
               <Button variant="ghost" size="sm" className="gap-2">
                 {t('view_all')}
                 <Arrow className="w-4 h-4" />
@@ -249,7 +249,7 @@ export default function AdminDashboard() {
                         <span data-ev-id="ev_a321ccfb01" className="text-sm text-muted-foreground">
                           לפני {formatTimeAgo(submission.submitted_at)}
                         </span>
-                        <Link to={`/admin/reviews?project=${submission.id}`}>
+                        <Link data-ev-id="ev_a6260c13e0" to={`/admin/reviews?project=${submission.id}`}>
                           <Button variant="outline" size="sm" className="gap-2">
                             <Eye className="w-4 h-4" />
                             {t('reviews')}
