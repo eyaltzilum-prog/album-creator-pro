@@ -1,16 +1,16 @@
 /**
  * Album Setup Modal - Screen B
- * Large white modal with sidebar progress and main content area
+ * Large white modal with sidebar on RIGHT, main content on LEFT
  * Steps: Design, Size, Binding, Opening Direction
  */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router';
-import { X, ChevronLeft, ChevronRight, ChevronDown, Minus, Plus, BookOpen, Book, FileText, ArrowLeftRight, Check } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, ChevronDown, Minus, Plus, BookOpen, Search, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { THEMES, Theme, getThemeById, getThemesByCategory, THEME_CATEGORIES } from '@/lib/themes';
-import { ALBUM_SIZES, AlbumSize, MIN_PAGES, MAX_PAGES } from '@/lib/albumSizes';
+import { ALBUM_SIZES, AlbumSize } from '@/lib/albumSizes';
 
 // Binding types
 const BINDING_TYPES = [
@@ -40,7 +40,6 @@ const BINDING_TYPES = [
 }];
 
 
-// Setup data interface
 interface SetupState {
   themeId: string | null;
   theme: Theme | null;
@@ -59,20 +58,83 @@ const STEPS = [
 { id: 'direction', number: 4, label: { he: 'כיוון פתיחה', en: 'Direction' } }];
 
 
+// Cover preview component for setup modal
+function CoverPreview({ theme, size = 'large' }: {theme: Theme | null;size?: 'small' | 'large';}) {
+  const dimensions = size === 'large' ? { w: 180, h: 220 } : { w: 120, h: 150 };
+
+  if (!theme) {
+    return (
+      <div data-ev-id="ev_6d0832baf3"
+      className="bg-gray-100 rounded-lg flex items-center justify-center"
+      style={{ width: dimensions.w, height: dimensions.h }}>
+
+        <span data-ev-id="ev_fba4a252ed" className="text-gray-400 text-sm">ללא עיצוב</span>
+      </div>);
+
+  }
+
+  return (
+    <div data-ev-id="ev_a575a6e619" className="relative" style={{ width: dimensions.w + 20, height: dimensions.h + 30 }}>
+      {/* Floor shadow */}
+      <div data-ev-id="ev_412cf5bfed"
+      className="absolute bottom-0 left-1/2 -translate-x-1/2 bg-black/10 rounded-full blur-md"
+      style={{ width: dimensions.w * 0.8, height: 12 }} />
+
+      {/* Book with spine */}
+      <div data-ev-id="ev_a3053af841" className="relative" style={{ width: dimensions.w, height: dimensions.h }}>
+        {/* Spine */}
+        <div data-ev-id="ev_dddfd308f6"
+        className="absolute top-0 h-full w-3 rounded-l"
+        style={{
+          left: 0,
+          background: `linear-gradient(90deg, ${theme.colors.primary}dd 0%, ${theme.colors.primary} 100%)`,
+          boxShadow: 'inset -1px 0 2px rgba(0,0,0,0.2)'
+        }} />
+
+        {/* Cover */}
+        <div data-ev-id="ev_3748c6adda"
+        className="absolute top-0 right-0 rounded-r overflow-hidden shadow-lg"
+        style={{
+          left: 10,
+          height: dimensions.h,
+          background: theme.previewGradient,
+          border: `1px solid ${theme.colors.primary}33`
+        }}>
+
+          {/* Photo area simulation */}
+          <div data-ev-id="ev_ffffbeaa15" className="absolute inset-4 rounded bg-white/20 flex items-center justify-center">
+            <div data-ev-id="ev_2b80b6cbee"
+            className="w-3/4 h-2/3 rounded opacity-60"
+            style={{ background: theme.colors.accent }} />
+
+          </div>
+          {/* Title area */}
+          <div data-ev-id="ev_76015976be" className="absolute bottom-4 left-0 right-0 flex flex-col items-center gap-1">
+            <div data-ev-id="ev_b545a39b2d" className="h-2 rounded bg-white/50" style={{ width: '50%' }} />
+            <div data-ev-id="ev_7c3aa5da56" className="h-1.5 rounded bg-white/30" style={{ width: '35%' }} />
+          </div>
+        </div>
+        {/* Edge highlight */}
+        <div data-ev-id="ev_d8cea8eae1"
+        className="absolute top-0 right-0 w-1 h-full bg-white/20 rounded-r" />
+
+      </div>
+    </div>);
+
+}
+
 export default function AlbumSetupNew() {
   const navigate = useNavigate();
   const location = useLocation();
   const { language, isRTL } = useLanguage();
   const { user } = useAuth();
 
-  // Get selected theme from navigation state
   const selectedThemeFromGallery = location.state?.selectedTheme as Theme | null;
 
   const [currentStep, setCurrentStep] = useState(0);
   const [themeCategory, setThemeCategory] = useState('all');
-  const [themeIndex, setThemeIndex] = useState(0);
 
-  const [setupState, setSetupState] = useState<SetupState>({
+  const [setupState, setSetupState] = useState<SetupState>(() => ({
     themeId: selectedThemeFromGallery?.id || null,
     theme: selectedThemeFromGallery || null,
     sizeId: null,
@@ -81,24 +143,45 @@ export default function AlbumSetupNew() {
     direction: 'rtl',
     pageCount: 24,
     albumName: language === 'he' ? 'האלבום שלי' : 'My Album'
+  }));
+
+  // Sync theme index with selected theme
+  const categoryThemes = useMemo(() =>
+  themeCategory === 'all' ? THEMES : getThemesByCategory(themeCategory),
+  [themeCategory]
+  );
+
+  const [themeIndex, setThemeIndex] = useState(() => {
+    if (selectedThemeFromGallery) {
+      const idx = categoryThemes.findIndex((t) => t.id === selectedThemeFromGallery.id);
+      return idx >= 0 ? idx : 0;
+    }
+    return 0;
   });
 
-  // Redirect if not authenticated
+  // When category changes, find selected theme in new category or reset
+  useEffect(() => {
+    if (setupState.theme) {
+      const idx = categoryThemes.findIndex((t) => t.id === setupState.theme?.id);
+      if (idx >= 0) {
+        setThemeIndex(idx);
+      } else {
+        // Theme not in this category, show first theme but don't change selection
+        setThemeIndex(0);
+      }
+    } else {
+      setThemeIndex(0);
+    }
+  }, [themeCategory, categoryThemes, setupState.theme]);
+
   useEffect(() => {
     if (!user) {
       navigate('/login', { state: { returnTo: '/album/new' } });
     }
   }, [user, navigate]);
 
-  // Get current binding limits
   const currentBinding = BINDING_TYPES.find((b) => b.id === setupState.bindingId)!;
 
-  // Get themes for current category
-  const categoryThemes = themeCategory === 'all' ?
-  THEMES :
-  getThemesByCategory(themeCategory);
-
-  // Update page count when binding changes
   useEffect(() => {
     if (setupState.pageCount < currentBinding.min) {
       setSetupState((s) => ({ ...s, pageCount: currentBinding.min }));
@@ -109,7 +192,7 @@ export default function AlbumSetupNew() {
 
   const canProceed = useCallback(() => {
     switch (currentStep) {
-      case 0:return true; // Design is optional
+      case 0:return true;
       case 1:return !!setupState.sizeId;
       case 2:return !!setupState.bindingId;
       case 3:return !!setupState.direction;
@@ -121,12 +204,7 @@ export default function AlbumSetupNew() {
     if (currentStep < STEPS.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Proceed to photo import
-      navigate('/album/photos', {
-        state: {
-          setupState
-        }
-      });
+      navigate('/album/photos', { state: { setupState } });
     }
   };
 
@@ -134,7 +212,7 @@ export default function AlbumSetupNew() {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     } else {
-      navigate('/album/new');
+      navigate('/album/new', { state: { returnTheme: setupState.theme } });
     }
   };
 
@@ -143,19 +221,11 @@ export default function AlbumSetupNew() {
   };
 
   const handleSelectTheme = (theme: Theme | null) => {
-    setSetupState((s) => ({
-      ...s,
-      themeId: theme?.id || null,
-      theme: theme
-    }));
+    setSetupState((s) => ({ ...s, themeId: theme?.id || null, theme }));
   };
 
   const handleSelectSize = (size: AlbumSize) => {
-    setSetupState((s) => ({
-      ...s,
-      sizeId: size.id,
-      size: size
-    }));
+    setSetupState((s) => ({ ...s, sizeId: size.id, size }));
   };
 
   const handleSelectBinding = (bindingId: string) => {
@@ -182,26 +252,30 @@ export default function AlbumSetupNew() {
     handleSelectTheme(categoryThemes[newIndex]);
   };
 
+  // Display theme for step 1 - always show selected theme if exists
+  const displayTheme = setupState.theme || categoryThemes[themeIndex] || null;
+
   if (!user) {
     return (
-      <div data-ev-id="ev_9867da3cd4" className="min-h-screen bg-gray-900/80 flex items-center justify-center">
-        <div data-ev-id="ev_a053074fb4" className="animate-spin w-8 h-8 border-2 border-white border-t-transparent rounded-full" />
+      <div data-ev-id="ev_abf1f988fe" className="min-h-screen bg-gray-900/80 flex items-center justify-center">
+        <div data-ev-id="ev_43b69f818c" className="animate-spin w-8 h-8 border-2 border-white border-t-transparent rounded-full" />
       </div>);
 
   }
 
   return (
-    <div data-ev-id="ev_c3945ab151" className="fixed inset-0 z-50 bg-gray-900/80 flex items-center justify-center p-4" dir={isRTL ? 'rtl' : 'ltr'}>
-      {/* Modal */}
-      <motion.div data-ev-id="ev_6097731f77"
+    <div data-ev-id="ev_59b07d2ee0" className="fixed inset-0 z-50 bg-gray-800/90 flex items-center justify-center p-2 sm:p-4">
+      {/* Modal - explicit LTR flex so sidebar stays RIGHT regardless of text direction */}
+      <motion.div data-ev-id="ev_205a4880dd"
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="bg-white rounded-t-2xl rounded-b-lg w-full max-w-6xl h-[90vh] max-h-[800px] flex overflow-hidden shadow-2xl">
-
-        {/* Main content area - 78% */}
-        <div data-ev-id="ev_54549d0e42" className="flex-1 flex flex-col relative">
-          {/* Close button */}
-          <button data-ev-id="ev_9e0c4489e0"
+      className="bg-white rounded-2xl w-full max-w-[1400px] h-[95vh] flex flex-row overflow-hidden shadow-2xl"
+      style={{ direction: 'ltr' }} // Force LTR layout for modal structure
+      >
+        {/* Main content area - LEFT side, 78% */}
+        <div data-ev-id="ev_25ffe6979a" className="flex-[78] flex flex-col relative min-w-0" style={{ direction: isRTL ? 'rtl' : 'ltr' }}>
+          {/* Close button - visual top-left of main content */}
+          <button data-ev-id="ev_126ea1caac"
           onClick={handleClose}
           className="absolute top-4 left-4 z-10 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
 
@@ -209,37 +283,33 @@ export default function AlbumSetupNew() {
           </button>
 
           {/* Step content */}
-          <div data-ev-id="ev_a2aed0632a" className="flex-1 overflow-y-auto px-8 py-12">
+          <div data-ev-id="ev_fdca8a1e5b" className="flex-1 overflow-y-auto px-6 sm:px-12 py-10">
             <AnimatePresence mode="wait">
               {currentStep === 0 &&
-              <motion.div data-ev-id="ev_34c4dbc3f2"
+              <motion.div data-ev-id="ev_4aa6a18aec"
               key="design"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               className="h-full flex flex-col items-center">
 
-                  {/* Title with hairlines */}
-                  <div data-ev-id="ev_f560b866ec" className="flex items-center gap-4 mb-2">
-                    <div data-ev-id="ev_fbc38cc9f2" className="w-12 h-px bg-gray-300" />
-                    <h2 data-ev-id="ev_a56fa0baa0" className="text-2xl font-semibold text-gray-800">
+                  <div data-ev-id="ev_bd88ae6368" className="flex items-center gap-4 mb-2">
+                    <div data-ev-id="ev_2a8701d564" className="w-16 h-px bg-gray-300" />
+                    <h2 data-ev-id="ev_4d7b96a602" className="text-2xl font-semibold text-gray-800">
                       {language === 'he' ? 'בחרו עיצוב' : 'Choose Design'}
                     </h2>
-                    <div data-ev-id="ev_01c33a5c42" className="w-12 h-px bg-gray-300" />
+                    <div data-ev-id="ev_7ecef0906c" className="w-16 h-px bg-gray-300" />
                   </div>
-                  <p data-ev-id="ev_ee18f84a84" className="text-gray-500 text-sm mb-8">
+                  <p data-ev-id="ev_0fe2705b6f" className="text-gray-500 text-sm mb-8">
                     {language === 'he' ? 'בחרו עיצוב בסיס לאלבום' : 'Select a base design for your album'}
                   </p>
 
                   {/* Category tabs */}
-                  <div data-ev-id="ev_d5d886b0a3" className="flex gap-2 mb-8 flex-wrap justify-center">
+                  <div data-ev-id="ev_4b39e13e2f" className="flex gap-2 mb-10 flex-wrap justify-center">
                     {THEME_CATEGORIES.map((cat) =>
-                  <button data-ev-id="ev_74ac6bb904"
+                  <button data-ev-id="ev_8809a91ced"
                   key={cat.id}
-                  onClick={() => {
-                    setThemeCategory(cat.id);
-                    setThemeIndex(0);
-                  }}
+                  onClick={() => setThemeCategory(cat.id)}
                   className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                   themeCategory === cat.id ?
                   'bg-[#00aa9b] text-white' :
@@ -252,75 +322,48 @@ export default function AlbumSetupNew() {
                   </div>
 
                   {/* Theme preview with navigation */}
-                  <div data-ev-id="ev_8bdb9d240d" className="flex items-center gap-8">
-                    <button data-ev-id="ev_9e8122c769"
+                  <div data-ev-id="ev_4959bcb451" className="flex items-center gap-12">
+                    <button data-ev-id="ev_0601899393"
                   onClick={() => cycleTheme('prev')}
-                  className="w-10 h-10 rounded-full bg-gray-100 text-[#00aa9b] hover:bg-[#00aa9b] hover:text-white flex items-center justify-center transition-colors">
+                  className="w-12 h-12 rounded-full bg-gray-100 text-[#00aa9b] hover:bg-[#00aa9b] hover:text-white flex items-center justify-center transition-colors">
 
-                      {isRTL ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+                      {isRTL ? <ChevronRight className="w-6 h-6" /> : <ChevronLeft className="w-6 h-6" />}
                     </button>
 
                     {/* Large cover preview */}
-                    <div data-ev-id="ev_837b84ca12" className="relative">
-                      {categoryThemes.length > 0 ?
-                    <div data-ev-id="ev_0d345a0a94"
-                    className={`w-64 h-64 rounded-lg shadow-lg overflow-hidden border-4 transition-colors ${
-                    setupState.themeId === categoryThemes[themeIndex]?.id ?
-                    'border-[#00aa9b]' :
-                    'border-transparent'}`
-                    }
-                    style={{ background: categoryThemes[themeIndex]?.previewGradient }}>
+                    <div data-ev-id="ev_f8cc1b2d00"
+                  className={`cursor-pointer transition-all ${
+                  setupState.theme?.id === displayTheme?.id ? 'ring-4 ring-[#00aa9b] ring-offset-4' : ''} rounded-xl`
+                  }
+                  onClick={() => displayTheme && handleSelectTheme(displayTheme)}>
 
-                          <div data-ev-id="ev_7c1c105366" className="w-full h-full flex items-center justify-center p-6">
-                            <div data-ev-id="ev_245401b131" className="w-40 h-52 bg-white rounded shadow-lg relative overflow-hidden">
-                              <div data-ev-id="ev_4b35a4b11d"
-                          className="absolute inset-0 opacity-80"
-                          style={{ background: categoryThemes[themeIndex]?.colors.primary }} />
-
-                              <div data-ev-id="ev_41508e1c91" className="absolute inset-0 flex flex-col items-center justify-center p-4">
-                                <div data-ev-id="ev_32f22908ba"
-                            className="w-20 h-20 rounded-full mb-3 opacity-30"
-                            style={{ background: categoryThemes[themeIndex]?.colors.accent }} />
-
-                                <div data-ev-id="ev_efc504640f" className="w-24 h-2.5 rounded bg-white/40 mb-1.5" />
-                                <div data-ev-id="ev_c669a6203e" className="w-16 h-2 rounded bg-white/30" />
-                              </div>
-                            </div>
-                          </div>
-                        </div> :
-
-                    <div data-ev-id="ev_41ee9237e1" className="w-64 h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-                          <span data-ev-id="ev_d4f330fe04" className="text-gray-400">
-                            {language === 'he' ? 'אין עיצובים' : 'No designs'}
-                          </span>
-                        </div>
-                    }
+                      <CoverPreview theme={displayTheme} size="large" />
                     </div>
 
-                    <button data-ev-id="ev_cd78da9fba"
+                    <button data-ev-id="ev_143e9cbbe7"
                   onClick={() => cycleTheme('next')}
-                  className="w-10 h-10 rounded-full bg-gray-100 text-[#00aa9b] hover:bg-[#00aa9b] hover:text-white flex items-center justify-center transition-colors">
+                  className="w-12 h-12 rounded-full bg-gray-100 text-[#00aa9b] hover:bg-[#00aa9b] hover:text-white flex items-center justify-center transition-colors">
 
-                      {isRTL ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
+                      {isRTL ? <ChevronLeft className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
                     </button>
                   </div>
 
-                  {/* Theme name/description */}
-                  {categoryThemes.length > 0 &&
-                <div data-ev-id="ev_4299de86a3" className="text-center mt-6">
-                      <h3 data-ev-id="ev_2ecbb28588" className="font-semibold text-gray-800">
-                        {categoryThemes[themeIndex]?.name[language]}
+                  {/* Theme name/description - shows SELECTED theme */}
+                  {displayTheme &&
+                <div data-ev-id="ev_c84501cfa6" className="text-center mt-8">
+                      <h3 data-ev-id="ev_852b32d321" className="text-lg font-semibold text-gray-800">
+                        {displayTheme.name[language]}
                       </h3>
-                      <p data-ev-id="ev_f615bbc02e" className="text-sm text-gray-500 mt-1">
-                        {categoryThemes[themeIndex]?.description[language]}
+                      <p data-ev-id="ev_a1c4846483" className="text-sm text-gray-500 mt-1">
+                        {displayTheme.description[language]}
                       </p>
                     </div>
                 }
 
                   {/* Skip design option */}
-                  <button data-ev-id="ev_b6978ecbb5"
+                  <button data-ev-id="ev_deb1103759"
                 onClick={() => handleSelectTheme(null)}
-                className={`mt-8 px-6 py-2 rounded-full text-sm font-medium transition-colors ${
+                className={`mt-10 px-8 py-3 rounded-full text-sm font-medium transition-colors ${
                 setupState.themeId === null ?
                 'bg-gray-800 text-white' :
                 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`
@@ -332,189 +375,210 @@ export default function AlbumSetupNew() {
               }
 
               {currentStep === 1 &&
-              <motion.div data-ev-id="ev_88c9c8a9dc"
+              <motion.div data-ev-id="ev_9f8c56f4c0"
               key="size"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               className="h-full flex flex-col items-center">
 
-                  <div data-ev-id="ev_bb1518e3ec" className="flex items-center gap-4 mb-2">
-                    <div data-ev-id="ev_e7a9c75277" className="w-12 h-px bg-gray-300" />
-                    <h2 data-ev-id="ev_d1284b24a0" className="text-2xl font-semibold text-gray-800">
+                  <div data-ev-id="ev_96176998fd" className="flex items-center gap-4 mb-2">
+                    <div data-ev-id="ev_8874a8f16c" className="w-16 h-px bg-gray-300" />
+                    <h2 data-ev-id="ev_6180f327a9" className="text-2xl font-semibold text-gray-800">
                       {language === 'he' ? 'בחרו גודל' : 'Choose Size'}
                     </h2>
-                    <div data-ev-id="ev_377ea59c21" className="w-12 h-px bg-gray-300" />
+                    <div data-ev-id="ev_5bd4b6e1d8" className="w-16 h-px bg-gray-300" />
                   </div>
-                  <p data-ev-id="ev_fce9d1cc06" className="text-gray-500 text-sm mb-8">
+                  <p data-ev-id="ev_2bc7032515" className="text-gray-500 text-sm mb-10">
                     {language === 'he' ? 'בחרו את גודל האלבום' : 'Select the album size'}
                   </p>
 
-                  {/* 3x2 size grid */}
-                  <div data-ev-id="ev_40d458978e" className="grid grid-cols-3 gap-4 max-w-2xl">
-                    {ALBUM_SIZES.slice(0, 6).map((size) =>
-                  <button data-ev-id="ev_2c8dec9e47"
-                  key={size.id}
-                  onClick={() => handleSelectSize(size)}
-                  className={`p-6 rounded-xl border-2 transition-all hover:shadow-md ${
-                  setupState.sizeId === size.id ?
-                  'border-[#00aa9b] bg-[#00aa9b]/5 shadow-md' :
-                  'border-gray-200 hover:border-gray-300'}`
-                  }>
+                  {/* 3x2 size grid - matching reference */}
+                  <div data-ev-id="ev_7470839ef8" className="grid grid-cols-3 gap-6 max-w-3xl">
+                    {ALBUM_SIZES.slice(0, 6).map((size) => {
+                    const isSelected = setupState.sizeId === size.id;
+                    // Calculate proportional preview
+                    const maxDim = 80;
+                    const ratio = size.widthCm / size.heightCm;
+                    const previewW = ratio >= 1 ? maxDim : maxDim * ratio;
+                    const previewH = ratio >= 1 ? maxDim / ratio : maxDim;
 
-                        {/* Size preview shape */}
-                        <div data-ev-id="ev_c0b2ace1ce" className="flex justify-center mb-4">
-                          <div data-ev-id="ev_f4d25b7913"
-                      className="bg-gray-200 rounded"
-                      style={{
-                        width: size.category === 'square' ? 60 : size.category === 'landscape' ? 72 : 48,
-                        height: size.category === 'square' ? 60 : size.category === 'landscape' ? 48 : 72
-                      }} />
+                    return (
+                      <button data-ev-id="ev_b7569ec4a4"
+                      key={size.id}
+                      onClick={() => handleSelectSize(size)}
+                      className={`relative p-6 rounded-2xl border-2 transition-all hover:shadow-lg bg-white ${
+                      isSelected ?
+                      'border-[#00aa9b] shadow-lg' :
+                      'border-gray-200 hover:border-gray-300'}`
+                      }
+                      style={{ minHeight: 180 }}>
 
-                        </div>
-                        {/* Size name */}
-                        <div data-ev-id="ev_1430fd9061" className="text-center">
-                          <div data-ev-id="ev_c3721913a6" className="font-medium text-gray-800 text-sm">
-                            {size.name[language]}
+                          {/* Proportional album preview shape */}
+                          <div data-ev-id="ev_671f179475" className="flex justify-center items-center mb-6" style={{ height: 90 }}>
+                            <div data-ev-id="ev_30c912f01f"
+                          className="rounded-sm shadow-md relative"
+                          style={{
+                            width: previewW,
+                            height: previewH,
+                            background: setupState.theme?.previewGradient || 'linear-gradient(135deg, #e0e0e0 0%, #f5f5f5 100%)'
+                          }}>
+
+                              {/* Inner photo area hint */}
+                              <div data-ev-id="ev_ca0da738cf" className="absolute inset-2 rounded-sm bg-white/30" />
+                            </div>
                           </div>
-                          <div data-ev-id="ev_507078ade1" className="text-xs text-gray-500 mt-1">
-                            {size.widthCm}×{size.heightCm} ס"מ
+                          
+                          {/* Size caption - below tile */}
+                          <div data-ev-id="ev_96880ce72b" className="text-center">
+                            <div data-ev-id="ev_1b81024560" className="font-semibold text-gray-800">
+                              {size.widthCm}×{size.heightCm} {language === 'he' ? 'ס"מ' : 'cm'}
+                            </div>
+                            <div data-ev-id="ev_5b0ea0c1d6" className="text-xs text-gray-500 mt-1">
+                              {size.name[language]}
+                            </div>
                           </div>
-                        </div>
-                        {/* Selected check */}
-                        {setupState.sizeId === size.id &&
-                    <div data-ev-id="ev_88dd2cfa0a" className="absolute top-2 right-2 w-5 h-5 bg-[#00aa9b] rounded-full flex items-center justify-center">
-                            <Check className="w-3 h-3 text-white" />
+                          
+                          {/* Magnifier in corner */}
+                          <div data-ev-id="ev_b73a7c3088" className="absolute bottom-3 left-3 w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center">
+                            <Search className="w-3.5 h-3.5 text-gray-400" />
                           </div>
-                    }
-                      </button>
-                  )}
+                          
+                          {/* Selected indicator */}
+                          {isSelected &&
+                        <div data-ev-id="ev_56fd9a3e50" className="absolute top-3 right-3 w-6 h-6 bg-[#00aa9b] rounded-full flex items-center justify-center">
+                              <Check className="w-4 h-4 text-white" />
+                            </div>
+                        }
+                        </button>);
+
+                  })}
                   </div>
                 </motion.div>
               }
 
               {currentStep === 2 &&
-              <motion.div data-ev-id="ev_630690b235"
+              <motion.div data-ev-id="ev_513ef20ede"
               key="binding"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               className="h-full flex flex-col items-center">
 
-                  <div data-ev-id="ev_0f9010b6f5" className="flex items-center gap-4 mb-2">
-                    <div data-ev-id="ev_78868ec050" className="w-12 h-px bg-gray-300" />
-                    <h2 data-ev-id="ev_e45a18c56a" className="text-2xl font-semibold text-gray-800">
+                  <div data-ev-id="ev_9e75fabb10" className="flex items-center gap-4 mb-2">
+                    <div data-ev-id="ev_5932f265cd" className="w-16 h-px bg-gray-300" />
+                    <h2 data-ev-id="ev_78097df5f7" className="text-2xl font-semibold text-gray-800">
                       {language === 'he' ? 'בחרו סוג כריכה' : 'Choose Binding'}
                     </h2>
-                    <div data-ev-id="ev_e3b6490f21" className="w-12 h-px bg-gray-300" />
+                    <div data-ev-id="ev_121f8eaa55" className="w-16 h-px bg-gray-300" />
                   </div>
-                  <p data-ev-id="ev_06d57cb15c" className="text-gray-500 text-sm mb-8">
+                  <p data-ev-id="ev_6e57f84f1a" className="text-gray-500 text-sm mb-10">
                     {language === 'he' ? 'בחרו את סוג הכריכה לאלבום' : 'Select the binding type'}
                   </p>
 
                   {/* 3 binding cards */}
-                  <div data-ev-id="ev_148004f8ec" className="flex gap-6 max-w-4xl">
-                    {BINDING_TYPES.map((binding) =>
-                  <button data-ev-id="ev_99e0f2fd5f"
-                  key={binding.id}
-                  onClick={() => handleSelectBinding(binding.id)}
-                  className={`flex-1 p-8 rounded-xl border-2 transition-all hover:shadow-md ${
-                  setupState.bindingId === binding.id ?
-                  'border-[#00aa9b] bg-[#00aa9b]/5 shadow-md' :
-                  'border-gray-200 hover:border-gray-300'}`
-                  }>
+                  <div data-ev-id="ev_01188f3580" className="flex gap-6 max-w-4xl w-full">
+                    {BINDING_TYPES.map((binding) => {
+                    const isSelected = setupState.bindingId === binding.id;
+                    return (
+                      <button data-ev-id="ev_3791254535"
+                      key={binding.id}
+                      onClick={() => handleSelectBinding(binding.id)}
+                      className={`flex-1 p-8 rounded-2xl border-2 transition-all hover:shadow-lg ${
+                      isSelected ?
+                      'border-[#00aa9b] bg-[#00aa9b]/5 shadow-lg' :
+                      'border-gray-200 hover:border-gray-300'}`
+                      }>
 
-                        {/* Icon */}
-                        <div data-ev-id="ev_219fbf390e" className="flex justify-center mb-4">
-                          <BookOpen className="w-12 h-12 text-gray-700" strokeWidth={1.5} />
-                        </div>
-                        {/* Name */}
-                        <h3 data-ev-id="ev_59915683c8" className="font-semibold text-gray-800 text-center mb-2">
-                          {binding.name[language]}
-                        </h3>
-                        {/* Description */}
-                        <p data-ev-id="ev_5569b75922" className="text-sm text-gray-500 text-center mb-4">
-                          {binding.description[language]}
-                        </p>
-                        {/* Page range */}
-                        <p data-ev-id="ev_a7bfca5a06" className="text-xs font-medium text-[#00aa9b] text-center">
-                          {binding.pages[language]}
-                        </p>
-                      </button>
-                  )}
+                          {/* Icon */}
+                          <div data-ev-id="ev_397472272b" className="flex justify-center mb-5">
+                            <div data-ev-id="ev_eab2f504be" className="w-16 h-16 rounded-xl bg-gray-100 flex items-center justify-center">
+                              <BookOpen className="w-8 h-8 text-gray-600" strokeWidth={1.5} />
+                            </div>
+                          </div>
+                          <h3 data-ev-id="ev_48e29ecc0c" className="font-semibold text-gray-800 text-center text-lg mb-2">
+                            {binding.name[language]}
+                          </h3>
+                          <p data-ev-id="ev_0e5ea12450" className="text-sm text-gray-500 text-center mb-4">
+                            {binding.description[language]}
+                          </p>
+                          <p data-ev-id="ev_dd4b37f097" className="text-sm font-semibold text-[#00aa9b] text-center">
+                            {binding.pages[language]}
+                          </p>
+                        </button>);
+
+                  })}
                   </div>
                 </motion.div>
               }
 
               {currentStep === 3 &&
-              <motion.div data-ev-id="ev_fa67f951c6"
+              <motion.div data-ev-id="ev_48dcec46b2"
               key="direction"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               className="h-full flex flex-col items-center">
 
-                  <div data-ev-id="ev_838697a03c" className="flex items-center gap-4 mb-2">
-                    <div data-ev-id="ev_6a130fd49c" className="w-12 h-px bg-gray-300" />
-                    <h2 data-ev-id="ev_2be0e22faa" className="text-2xl font-semibold text-gray-800">
+                  <div data-ev-id="ev_427831ce67" className="flex items-center gap-4 mb-2">
+                    <div data-ev-id="ev_ca758a5e09" className="w-16 h-px bg-gray-300" />
+                    <h2 data-ev-id="ev_34ad883b0c" className="text-2xl font-semibold text-gray-800">
                       {language === 'he' ? 'בחרו כיוון פתיחה' : 'Choose Opening Direction'}
                     </h2>
-                    <div data-ev-id="ev_48db41036a" className="w-12 h-px bg-gray-300" />
+                    <div data-ev-id="ev_1a66883ef2" className="w-16 h-px bg-gray-300" />
                   </div>
-                  <p data-ev-id="ev_8fbdac7b85" className="text-gray-500 text-sm mb-8">
+                  <p data-ev-id="ev_bc0fc1f069" className="text-gray-500 text-sm mb-10">
                     {language === 'he' ? 'בחרו את כיוון פתיחת האלבום' : 'Select how the album opens'}
                   </p>
 
                   {/* Direction cards */}
-                  <div data-ev-id="ev_d0644b4979" className="flex gap-8 max-w-2xl">
-                    <button data-ev-id="ev_5c77dd3052"
+                  <div data-ev-id="ev_c74be925f7" className="flex gap-8 max-w-2xl w-full">
+                    <button data-ev-id="ev_56c59e237b"
                   onClick={() => handleSelectDirection('rtl')}
-                  className={`flex-1 p-8 rounded-xl border-2 transition-all hover:shadow-md ${
+                  className={`flex-1 p-10 rounded-2xl border-2 transition-all hover:shadow-lg ${
                   setupState.direction === 'rtl' ?
-                  'border-[#00aa9b] bg-[#00aa9b]/5 shadow-md' :
+                  'border-[#00aa9b] bg-[#00aa9b]/5 shadow-lg' :
                   'border-gray-200 hover:border-gray-300'}`
                   }>
 
-                      {/* RTL illustration */}
-                      <div data-ev-id="ev_078c8338c4" className="flex justify-center mb-4">
-                        <div data-ev-id="ev_944ef795e7" className="relative w-20 h-16">
-                          <div data-ev-id="ev_0b7daf5736" className="absolute right-0 w-10 h-16 bg-gray-300 rounded-l" />
-                          <div data-ev-id="ev_1b5f390a85" className="absolute left-0 w-10 h-16 bg-gray-200 rounded-r" />
-                          <div data-ev-id="ev_68fdfb1701" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                            <ChevronLeft className="w-6 h-6 text-[#00aa9b]" />
+                      <div data-ev-id="ev_b7628a2e45" className="flex justify-center mb-6">
+                        <div data-ev-id="ev_b637dde945" className="relative w-24 h-20">
+                          <div data-ev-id="ev_7da77c05c4" className="absolute right-0 w-12 h-20 bg-gray-300 rounded-l shadow" />
+                          <div data-ev-id="ev_902018931d" className="absolute left-0 w-12 h-20 bg-gray-200 rounded-r" />
+                          <div data-ev-id="ev_5cf49a262e" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-[#00aa9b] flex items-center justify-center">
+                            <ChevronLeft className="w-5 h-5 text-white" />
                           </div>
                         </div>
                       </div>
-                      <h3 data-ev-id="ev_eed8f994a5" className="font-semibold text-gray-800 text-center mb-2">
+                      <h3 data-ev-id="ev_24505892c2" className="font-semibold text-gray-800 text-center text-lg mb-2">
                         {language === 'he' ? 'מימין לשמאל' : 'Right to Left'}
                       </h3>
-                      <p data-ev-id="ev_1d5e70c7c4" className="text-sm text-gray-500 text-center">
+                      <p data-ev-id="ev_5d5c247a7f" className="text-sm text-gray-500 text-center">
                         {language === 'he' ? 'מומלץ לעברית ושפות RTL' : 'Recommended for Hebrew'}
                       </p>
                     </button>
 
-                    <button data-ev-id="ev_655c570239"
+                    <button data-ev-id="ev_a12e9cad98"
                   onClick={() => handleSelectDirection('ltr')}
-                  className={`flex-1 p-8 rounded-xl border-2 transition-all hover:shadow-md ${
+                  className={`flex-1 p-10 rounded-2xl border-2 transition-all hover:shadow-lg ${
                   setupState.direction === 'ltr' ?
-                  'border-[#00aa9b] bg-[#00aa9b]/5 shadow-md' :
+                  'border-[#00aa9b] bg-[#00aa9b]/5 shadow-lg' :
                   'border-gray-200 hover:border-gray-300'}`
                   }>
 
-                      {/* LTR illustration */}
-                      <div data-ev-id="ev_f2ce268feb" className="flex justify-center mb-4">
-                        <div data-ev-id="ev_65c0981bba" className="relative w-20 h-16">
-                          <div data-ev-id="ev_6c2097f728" className="absolute left-0 w-10 h-16 bg-gray-300 rounded-r" />
-                          <div data-ev-id="ev_d5faab5478" className="absolute right-0 w-10 h-16 bg-gray-200 rounded-l" />
-                          <div data-ev-id="ev_3cc8dd4c55" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                            <ChevronRight className="w-6 h-6 text-[#00aa9b]" />
+                      <div data-ev-id="ev_c9aa33aeda" className="flex justify-center mb-6">
+                        <div data-ev-id="ev_aadfcf2dc1" className="relative w-24 h-20">
+                          <div data-ev-id="ev_9d0c6cade3" className="absolute left-0 w-12 h-20 bg-gray-300 rounded-r shadow" />
+                          <div data-ev-id="ev_5e3e31b289" className="absolute right-0 w-12 h-20 bg-gray-200 rounded-l" />
+                          <div data-ev-id="ev_3f250e7da6" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-[#00aa9b] flex items-center justify-center">
+                            <ChevronRight className="w-5 h-5 text-white" />
                           </div>
                         </div>
                       </div>
-                      <h3 data-ev-id="ev_8be3a876d4" className="font-semibold text-gray-800 text-center mb-2">
+                      <h3 data-ev-id="ev_32a6683ddb" className="font-semibold text-gray-800 text-center text-lg mb-2">
                         {language === 'he' ? 'משמאל לימין' : 'Left to Right'}
                       </h3>
-                      <p data-ev-id="ev_dfe829ec98" className="text-sm text-gray-500 text-center">
+                      <p data-ev-id="ev_2131d8d3f8" className="text-sm text-gray-500 text-center">
                         {language === 'he' ? 'מומלץ לאנגלית ושפות LTR' : 'Recommended for English'}
                       </p>
                     </button>
@@ -525,50 +589,55 @@ export default function AlbumSetupNew() {
           </div>
         </div>
 
-        {/* Sidebar - 22% */}
-        <div data-ev-id="ev_c4189b8d30" className="w-72 bg-gray-50 border-l border-gray-200 flex flex-col">
+        {/* Sidebar - RIGHT side, 22% - always visually on right */}
+        <div data-ev-id="ev_4c123ce31b"
+        className="w-72 lg:w-80 bg-gray-50 border-l border-gray-200 flex flex-col flex-shrink-0"
+        style={{ direction: isRTL ? 'rtl' : 'ltr' }}>
+
           {/* Album name input */}
-          <div data-ev-id="ev_19228c7573" className="p-6 border-b border-gray-200">
-            <label data-ev-id="ev_8dc8f1f8db" className="block text-sm font-medium text-gray-700 mb-2">
+          <div data-ev-id="ev_46efb2fcc4" className="p-5 border-b border-gray-200">
+            <label data-ev-id="ev_a10704423f" className="block text-sm font-medium text-gray-700 mb-2">
               {language === 'he' ? 'שם האלבום' : 'Album Name'}
             </label>
-            <input data-ev-id="ev_261d9a3614"
+            <input data-ev-id="ev_a91c9badc5"
             type="text"
             value={setupState.albumName}
             onChange={(e) => setSetupState((s) => ({ ...s, albumName: e.target.value }))}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:border-[#00aa9b] focus:ring-1 focus:ring-[#00aa9b] outline-none"
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:border-[#00aa9b] focus:ring-1 focus:ring-[#00aa9b] outline-none"
             placeholder={language === 'he' ? 'הזינו שם...' : 'Enter name...'} />
 
           </div>
 
-          {/* Progress steps */}
-          <div data-ev-id="ev_7d8fa13e9a" className="flex-1 overflow-y-auto">
+          {/* Progress steps - compact, no scroll needed */}
+          <div data-ev-id="ev_7196276c21" className="flex-1">
             {STEPS.map((step, idx) =>
-            <div data-ev-id="ev_3bffc7fa9a" key={step.id}>
-                <button data-ev-id="ev_78e6b0984e"
+            <div data-ev-id="ev_f31b986141" key={step.id}>
+                <button data-ev-id="ev_3b39d912d1"
               onClick={() => idx <= currentStep && setCurrentStep(idx)}
               disabled={idx > currentStep}
-              className={`w-full text-right px-6 py-4 flex items-center gap-3 transition-colors ${
+              className={`w-full px-5 py-3.5 flex items-center gap-3 transition-colors ${
               idx === currentStep ?
               'bg-[#00aa9b] text-white' :
               idx < currentStep ?
               'bg-white text-gray-700 hover:bg-gray-100' :
-              'bg-gray-100 text-gray-400'}`
+              'bg-gray-100/50 text-gray-400'}`
               }>
 
-                  <span data-ev-id="ev_29d9f7d732" className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold ${
+                  <span data-ev-id="ev_2bf4f54d10"
+                className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
                 idx === currentStep ?
                 'bg-white/20' :
                 idx < currentStep ?
                 'bg-[#00aa9b] text-white' :
                 'bg-gray-200'}`
                 }>
+
                     {idx < currentStep ? <Check className="w-4 h-4" /> : step.number}
                   </span>
-                  <span data-ev-id="ev_73cedf3a1c" className="font-medium">{step.label[language]}</span>
+                  <span data-ev-id="ev_5f769b4bd6" className="font-medium text-sm">{step.label[language]}</span>
                 </button>
                 {idx < STEPS.length - 1 &&
-              <div data-ev-id="ev_af4d86b560" className="flex justify-center py-1">
+              <div data-ev-id="ev_dcea1cada1" className="flex justify-center py-0.5">
                     <ChevronDown className="w-4 h-4 text-gray-300" />
                   </div>
               }
@@ -576,59 +645,59 @@ export default function AlbumSetupNew() {
             )}
           </div>
 
-          {/* Page count control */}
-          <div data-ev-id="ev_1a08f56d08" className="p-6 border-t border-gray-200">
-            <label data-ev-id="ev_7a6171733d" className="block text-sm font-medium text-gray-700 mb-3">
+          {/* Page count control - compact */}
+          <div data-ev-id="ev_55fd4e0094" className="p-5 border-t border-gray-200">
+            <label data-ev-id="ev_1cea188867" className="block text-sm font-medium text-gray-700 mb-2">
               {language === 'he' ? 'מספר עמודים' : 'Page Count'}
             </label>
-            <div data-ev-id="ev_4e9368c577" className="flex items-center justify-center gap-4">
-              <button data-ev-id="ev_e09a416e05"
+            <div data-ev-id="ev_87787ae72a" className="flex items-center justify-center gap-3">
+              <button data-ev-id="ev_e0866b2bf4"
               onClick={() => handlePageCountChange(-2)}
               disabled={setupState.pageCount <= currentBinding.min}
-              className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed">
+              className="w-9 h-9 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed">
 
                 <Minus className="w-4 h-4" />
               </button>
-              <span data-ev-id="ev_74400b0e74" className="text-2xl font-bold text-gray-800 w-16 text-center">
+              <span data-ev-id="ev_44f0f45cdc" className="text-xl font-bold text-gray-800 w-12 text-center">
                 {setupState.pageCount}
               </span>
-              <button data-ev-id="ev_da8524e99a"
+              <button data-ev-id="ev_a30e414014"
               onClick={() => handlePageCountChange(2)}
               disabled={setupState.pageCount >= currentBinding.max}
-              className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed">
+              className="w-9 h-9 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed">
 
                 <Plus className="w-4 h-4" />
               </button>
             </div>
-            <p data-ev-id="ev_2d4b0cf9fc" className="text-xs text-gray-500 text-center mt-2">
+            <p data-ev-id="ev_97b62f0a4a" className="text-xs text-gray-500 text-center mt-1">
               {currentBinding.pages[language]}
             </p>
           </div>
 
-          {/* Current selections summary */}
-          <div data-ev-id="ev_b491f32df4" className="px-6 py-4 border-t border-gray-200 text-xs text-gray-500">
+          {/* Current selections summary - compact */}
+          <div data-ev-id="ev_3052cc9e1a" className="px-5 py-3 border-t border-gray-200 text-xs text-gray-500 space-y-0.5">
             {setupState.theme &&
-            <div data-ev-id="ev_f9f820b589" className="mb-1">עיצוב: {setupState.theme.name[language]}</div>
+            <div data-ev-id="ev_a64ca052b1">{language === 'he' ? 'עיצוב' : 'Design'}: {setupState.theme.name[language]}</div>
             }
             {setupState.size &&
-            <div data-ev-id="ev_f31b986141" className="mb-1">גודל: {setupState.size.name[language]}</div>
+            <div data-ev-id="ev_15abe740a3">{language === 'he' ? 'גודל' : 'Size'}: {setupState.size.widthCm}×{setupState.size.heightCm}</div>
             }
-            <div data-ev-id="ev_b0699bab3c">כריכה: {BINDING_TYPES.find((b) => b.id === setupState.bindingId)?.name[language]}</div>
+            <div data-ev-id="ev_2662e17c7c">{language === 'he' ? 'כריכה' : 'Binding'}: {BINDING_TYPES.find((b) => b.id === setupState.bindingId)?.name[language]}</div>
           </div>
 
           {/* Continue CTA */}
-          <div data-ev-id="ev_cfd4225e10" className="p-6 border-t border-gray-200">
-            <button data-ev-id="ev_6064d5ab11"
+          <div data-ev-id="ev_6396346fc8" className="p-5 border-t border-gray-200">
+            <button data-ev-id="ev_52c98192c0"
             onClick={handleNext}
             disabled={!canProceed()}
-            className="w-full py-4 bg-[#00aa9b] text-white font-semibold rounded-full hover:bg-[#009688] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+            className="w-full py-3.5 bg-[#00aa9b] text-white font-semibold rounded-full hover:bg-[#009688] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
 
               {currentStep === STEPS.length - 1 ?
               language === 'he' ? 'בואו נתחיל' : "Let's Start" :
               language === 'he' ? 'המשך' : 'Continue'}
             </button>
             {currentStep > 0 &&
-            <button data-ev-id="ev_8a7b2605d1"
+            <button data-ev-id="ev_e1e6b558fe"
             onClick={handleBack}
             className="w-full py-2 mt-2 text-gray-600 text-sm hover:text-gray-800">
 
