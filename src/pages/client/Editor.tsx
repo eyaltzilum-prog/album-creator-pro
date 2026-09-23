@@ -1398,6 +1398,21 @@ export default function ClientEditor() {
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const stageContainerRef = useRef<HTMLDivElement>(null);
 
+  // Compute photo usage counts across all spreads
+  const photoUsageCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    spreads.forEach((spread) => {
+      const objects = spread.canvas_data?.objects || [];
+      objects.forEach((obj) => {
+        if (obj.type === 'frame' && (obj as FrameElement).photoSrc) {
+          const src = (obj as FrameElement).photoSrc!;
+          counts.set(src, (counts.get(src) || 0) + 1);
+        }
+      });
+    });
+    return counts;
+  }, [spreads]);
+
   // Canvas dimensions - LEGACY COMPATIBILITY CRITICAL
   // The canvas coordinate system must match what was used when artwork was created.
   // Legacy albums used hardcoded 2100x1050. New albums with explicit canvasWidth/canvasHeight
@@ -1564,7 +1579,24 @@ export default function ClientEditor() {
         setSpreads(initial);
       }
       const { data: photos } = await supabase.from('client_photos').select('file_url').eq('project_id', projectId);
-      if (photos) setUploadedPhotos(photos.map((p) => p.file_url));
+      if (photos && photos.length > 0) {
+        setUploadedPhotos(photos.map((p) => p.file_url));
+      } else {
+        // Fallback: extract unique photo URLs from spread elements if client_photos is empty
+        const spreadPhotos = new Set<string>();
+        const allSpreads = spreadsData || [];
+        allSpreads.forEach((spread: any) => {
+          const objects = spread.canvas_data?.objects || [];
+          objects.forEach((obj: any) => {
+            if (obj.type === 'frame' && obj.photoSrc && !obj.photoSrc.startsWith('data:')) {
+              spreadPhotos.add(obj.photoSrc);
+            }
+          });
+        });
+        if (spreadPhotos.size > 0) {
+          setUploadedPhotos(Array.from(spreadPhotos));
+        }
+      }
     } catch (error) {console.error('Error fetching project:', error);} finally
     {setLoading(false);}
   };
@@ -2740,11 +2772,19 @@ export default function ClientEditor() {
                       </div>
                   }
                     <div data-ev-id="ev_d78f93734d" className="grid grid-cols-2 gap-2">
-                      {uploadedPhotos.map((photo, i) =>
-                    <motion.button data-ev-id="ev_33106bfc90" key={i} draggable onDragStart={(e) => handlePhotoDragStart(e as any, photo)} onDragEnd={handlePhotoDragEnd} whileHover={{ scale: 1.02 }} onClick={() => addPhotoToCanvas(photo)} className={`aspect-square rounded-lg overflow-hidden border-2 cursor-grab shadow-sm transition-colors ${draggedPhotoUrl === photo ? 'border-[#00a999] opacity-50' : 'border-gray-200 hover:border-[#00a999]'}`}>
-                          <img data-ev-id="ev_24c9bede78" src={photo} alt="" className="w-full h-full object-cover" />
-                        </motion.button>
-                    )}
+                      {uploadedPhotos.map((photo, i) => {
+                      const usageCount = photoUsageCounts.get(photo) || 0;
+                      return (
+                        <motion.button data-ev-id="ev_33106bfc90" key={i} draggable onDragStart={(e) => handlePhotoDragStart(e as any, photo)} onDragEnd={handlePhotoDragEnd} whileHover={{ scale: 1.02 }} onClick={() => addPhotoToCanvas(photo)} className={`relative aspect-square rounded-lg overflow-hidden border-2 cursor-grab shadow-sm transition-colors ${draggedPhotoUrl === photo ? 'border-[#00a999] opacity-50' : 'border-gray-200 hover:border-[#00a999]'}`}>
+                            <img data-ev-id="ev_24c9bede78" src={photo} alt="" className="w-full h-full object-cover" />
+                            {usageCount > 0 &&
+                          <span data-ev-id="ev_b340c554b9" className="absolute top-1 right-1 bg-[#00a999] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center shadow-sm">
+                                {usageCount}
+                              </span>
+                          }
+                          </motion.button>);
+
+                    })}
                     </div>
                     {uploadedPhotos.length === 0 &&
                   <div data-ev-id="ev_a4298de829" className="text-center py-10 text-gray-400">
