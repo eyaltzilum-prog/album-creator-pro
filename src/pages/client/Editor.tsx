@@ -539,22 +539,24 @@ function FilteredKonvaImage({
 function RotationHandle({
   element,
   onChange,
-  language
+  language,
+  stageRef
 }: {
   element: FrameElement;
   onChange: (attrs: Partial<FrameElement>) => void;
   language: 'he' | 'en';
+  stageRef: React.RefObject<Konva.Stage>;
 }) {
-  const [isDragging, setIsDragging] = useState(false);
-  const [startAngle, setStartAngle] = useState(0);
-  const [startRotation, setStartRotation] = useState(0);
+  const [isRotating, setIsRotating] = useState(false);
+  const startAngleRef = useRef(0);
+  const startRotationRef = useRef(0);
+  const centerRef = useRef({ x: 0, y: 0 });
 
   // Calculate handle position (centered above frame, accounting for rotation)
-  const handleDistance = 35; // Distance from frame top to handle center
-  const handleRadius = 12;
-  const stemLength = handleDistance - handleRadius;
+  const handleDistance = 30;
+  const handleRadius = 10;
 
-  // Center of frame
+  // Center of frame in canvas coordinates
   const centerX = element.x + element.width / 2;
   const centerY = element.y + element.height / 2;
 
@@ -563,40 +565,65 @@ function RotationHandle({
   const handleX = centerX - Math.sin(angleRad) * (element.height / 2 + handleDistance);
   const handleY = centerY - Math.cos(angleRad) * (element.height / 2 + handleDistance);
 
-  // Stem start (top of frame)
-  const stemStartX = centerX - Math.sin(angleRad) * (element.height / 2);
-  const stemStartY = centerY - Math.cos(angleRad) * (element.height / 2);
+  // Stem end (top edge of frame)
+  const stemEndX = centerX - Math.sin(angleRad) * (element.height / 2 + 2);
+  const stemEndY = centerY - Math.cos(angleRad) * (element.height / 2 + 2);
 
-  const handleDragStart = (e: Konva.KonvaEventObject<DragEvent | TouchEvent>) => {
+  const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
     e.cancelBubble = true;
-    setIsDragging(true);
-    const stage = e.target.getStage();
+    const stage = stageRef.current;
     if (!stage) return;
+    
+    setIsRotating(true);
+    startRotationRef.current = element.rotation;
+    centerRef.current = { x: centerX, y: centerY };
+    
     const pos = stage.getPointerPosition();
-    if (!pos) return;
-    const angle = Math.atan2(pos.x - centerX, -(pos.y - centerY)) * 180 / Math.PI;
-    setStartAngle(angle);
-    setStartRotation(element.rotation);
+    if (pos) {
+      startAngleRef.current = Math.atan2(pos.x - centerX, -(pos.y - centerY)) * 180 / Math.PI;
+    }
+    
+    stage.container().style.cursor = 'grabbing';
   };
 
-  const handleDragMove = (e: Konva.KonvaEventObject<DragEvent | TouchEvent>) => {
-    if (!isDragging) return;
-    e.cancelBubble = true;
-    const stage = e.target.getStage();
+  // Stage-level event handling for smooth rotation
+  useEffect(() => {
+    if (!isRotating) return;
+    const stage = stageRef.current;
     if (!stage) return;
-    const pos = stage.getPointerPosition();
-    if (!pos) return;
-    const currentAngle = Math.atan2(pos.x - centerX, -(pos.y - centerY)) * 180 / Math.PI;
-    let newRotation = startRotation + (currentAngle - startAngle);
-    // Normalize to -180 to 180
-    while (newRotation > 180) newRotation -= 360;
-    while (newRotation < -180) newRotation += 360;
-    onChange({ rotation: newRotation });
-  };
 
-  const handleDragEnd = () => {
-    setIsDragging(false);
-  };
+    const handleStageMove = () => {
+      const pos = stage.getPointerPosition();
+      if (!pos) return;
+      
+      const cx = centerRef.current.x;
+      const cy = centerRef.current.y;
+      const currentAngle = Math.atan2(pos.x - cx, -(pos.y - cy)) * 180 / Math.PI;
+      let newRotation = startRotationRef.current + (currentAngle - startAngleRef.current);
+      
+      while (newRotation > 180) newRotation -= 360;
+      while (newRotation < -180) newRotation += 360;
+      
+      onChange({ rotation: newRotation });
+    };
+
+    const handleStageUp = () => {
+      setIsRotating(false);
+      stage.container().style.cursor = 'default';
+    };
+
+    stage.on('mousemove touchmove', handleStageMove);
+    stage.on('mouseup touchend', handleStageUp);
+    window.addEventListener('mouseup', handleStageUp);
+    window.addEventListener('touchend', handleStageUp);
+
+    return () => {
+      stage.off('mousemove touchmove', handleStageMove);
+      stage.off('mouseup touchend', handleStageUp);
+      window.removeEventListener('mouseup', handleStageUp);
+      window.removeEventListener('touchend', handleStageUp);
+    };
+  }, [isRotating, onChange, stageRef]);
 
   const tooltip = language === 'he' ? 'סובב מסגרת' : 'Rotate frame';
 
@@ -604,7 +631,7 @@ function RotationHandle({
     <Group>
       {/* Stem line connecting frame to handle */}
       <Line
-        points={[stemStartX, stemStartY, handleX, handleY]}
+        points={[stemEndX, stemEndY, handleX, handleY]}
         stroke="#00a999"
         strokeWidth={2}
         listening={false}
@@ -617,20 +644,19 @@ function RotationHandle({
         fill="#ffffff"
         stroke="#00a999"
         strokeWidth={2}
-        draggable
-        onDragStart={handleDragStart}
-        onDragMove={handleDragMove}
-        onDragEnd={handleDragEnd}
-        onTouchStart={handleDragStart}
-        onTouchMove={handleDragMove}
-        onTouchEnd={handleDragEnd}
+        onMouseDown={handleMouseDown}
+        onTouchStart={handleMouseDown}
         onMouseEnter={(e) => {
-          const stage = e.target.getStage();
-          if (stage) stage.container().style.cursor = 'grab';
+          if (!isRotating) {
+            const stage = e.target.getStage();
+            if (stage) stage.container().style.cursor = 'grab';
+          }
         }}
         onMouseLeave={(e) => {
-          const stage = e.target.getStage();
-          if (stage) stage.container().style.cursor = 'default';
+          if (!isRotating) {
+            const stage = e.target.getStage();
+            if (stage) stage.container().style.cursor = 'default';
+          }
         }}
         title={tooltip}
       />
@@ -638,21 +664,19 @@ function RotationHandle({
       <Shape
         x={handleX}
         y={handleY}
-        sceneFunc={(ctx, shape) => {
+        sceneFunc={(ctx) => {
           ctx.beginPath();
-          // Draw circular arrow
-          ctx.arc(0, 0, 6, -Math.PI * 0.7, Math.PI * 0.5, false);
+          ctx.arc(0, 0, 5, -Math.PI * 0.75, Math.PI * 0.4, false);
           ctx.strokeStyle = '#00a999';
-          ctx.lineWidth = 2;
+          ctx.lineWidth = 1.5;
           ctx.lineCap = 'round';
           ctx.stroke();
-          // Arrow head
-          const endX = 6 * Math.cos(Math.PI * 0.5);
-          const endY = 6 * Math.sin(Math.PI * 0.5);
+          const endX = 5 * Math.cos(Math.PI * 0.4);
+          const endY = 5 * Math.sin(Math.PI * 0.4);
           ctx.beginPath();
-          ctx.moveTo(endX - 3, endY - 2);
+          ctx.moveTo(endX - 2, endY - 2);
           ctx.lineTo(endX, endY);
-          ctx.lineTo(endX + 3, endY - 2);
+          ctx.lineTo(endX + 2, endY - 1);
           ctx.stroke();
         }}
         listening={false}
@@ -669,62 +693,90 @@ function PhotoPanHandle({
   element,
   imageProps,
   onPhotoChange,
-  language
+  language,
+  stageRef
 }: {
   element: FrameElement;
   imageProps: { x: number; y: number; width: number; height: number } | null;
   onPhotoChange: (attrs: Partial<FrameElement>) => void;
   language: 'he' | 'en';
+  stageRef: React.RefObject<Konva.Stage>;
 }) {
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [startOffset, setStartOffset] = useState({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const dragStartRef = useRef({ x: 0, y: 0 });
+  const startOffsetRef = useRef({ x: 0, y: 0 });
+  const maxOffsetRef = useRef({ x: 0, y: 0 });
+  const rotationRef = useRef(0);
+
+  // Calculate max offsets (must be recalculated when imageProps change)
+  const maxOffsetX = imageProps ? Math.max(0, (imageProps.width - element.width) / 2) : 0;
+  const maxOffsetY = imageProps ? Math.max(0, (imageProps.height - element.height) / 2) : 0;
+
+  // Stage-level event handling for smooth panning
+  useEffect(() => {
+    if (!isPanning) return;
+    const stage = stageRef.current;
+    if (!stage) return;
+
+    const handleStageMove = () => {
+      const pos = stage.getPointerPosition();
+      if (!pos) return;
+      
+      const rawDeltaX = pos.x - dragStartRef.current.x;
+      const rawDeltaY = pos.y - dragStartRef.current.y;
+      
+      // Rotate delta by negative frame rotation to get frame-local movement
+      const rotRad = -(rotationRef.current * Math.PI) / 180;
+      const deltaX = rawDeltaX * Math.cos(rotRad) - rawDeltaY * Math.sin(rotRad);
+      const deltaY = rawDeltaX * Math.sin(rotRad) + rawDeltaY * Math.cos(rotRad);
+      
+      let newOffsetX = startOffsetRef.current.x + deltaX;
+      let newOffsetY = startOffsetRef.current.y + deltaY;
+      
+      newOffsetX = Math.max(-maxOffsetRef.current.x, Math.min(maxOffsetRef.current.x, newOffsetX));
+      newOffsetY = Math.max(-maxOffsetRef.current.y, Math.min(maxOffsetRef.current.y, newOffsetY));
+      
+      onPhotoChange({ photoOffsetX: newOffsetX, photoOffsetY: newOffsetY });
+    };
+
+    const handleStageUp = () => {
+      setIsPanning(false);
+      stage.container().style.cursor = 'default';
+    };
+
+    stage.on('mousemove touchmove', handleStageMove);
+    stage.on('mouseup touchend', handleStageUp);
+    window.addEventListener('mouseup', handleStageUp);
+    window.addEventListener('touchend', handleStageUp);
+
+    return () => {
+      stage.off('mousemove touchmove', handleStageMove);
+      stage.off('mouseup touchend', handleStageUp);
+      window.removeEventListener('mouseup', handleStageUp);
+      window.removeEventListener('touchend', handleStageUp);
+    };
+  }, [isPanning, onPhotoChange, stageRef]);
 
   if (!imageProps) return null;
 
-  // Calculate center of frame
+  // Calculate center of frame in canvas coordinates
   const centerX = element.x + element.width / 2;
   const centerY = element.y + element.height / 2;
-  const iconSize = 32;
+  const iconSize = 28;
 
-  // Calculate max offsets to keep frame filled
-  const maxOffsetX = Math.max(0, (imageProps.width - element.width) / 2);
-  const maxOffsetY = Math.max(0, (imageProps.height - element.height) / 2);
-
-  const handleDragStart = (e: Konva.KonvaEventObject<DragEvent | TouchEvent>) => {
+  const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
     e.cancelBubble = true;
-    setIsDragging(true);
-    const stage = e.target.getStage();
-    if (!stage) return;
-    const pos = stage.getPointerPosition();
-    if (!pos) return;
-    setDragStart({ x: pos.x, y: pos.y });
-    setStartOffset({ x: element.photoOffsetX, y: element.photoOffsetY });
-  };
-
-  const handleDragMove = (e: Konva.KonvaEventObject<DragEvent | TouchEvent>) => {
-    if (!isDragging) return;
-    e.cancelBubble = true;
-    const stage = e.target.getStage();
+    const stage = stageRef.current;
     if (!stage) return;
     const pos = stage.getPointerPosition();
     if (!pos) return;
     
-    const deltaX = pos.x - dragStart.x;
-    const deltaY = pos.y - dragStart.y;
-    
-    // Calculate new offset clamped to keep frame filled
-    let newOffsetX = startOffset.x + deltaX;
-    let newOffsetY = startOffset.y + deltaY;
-    
-    newOffsetX = Math.max(-maxOffsetX, Math.min(maxOffsetX, newOffsetX));
-    newOffsetY = Math.max(-maxOffsetY, Math.min(maxOffsetY, newOffsetY));
-    
-    onPhotoChange({ photoOffsetX: newOffsetX, photoOffsetY: newOffsetY });
-  };
-
-  const handleDragEnd = () => {
-    setIsDragging(false);
+    setIsPanning(true);
+    dragStartRef.current = { x: pos.x, y: pos.y };
+    startOffsetRef.current = { x: element.photoOffsetX, y: element.photoOffsetY };
+    maxOffsetRef.current = { x: maxOffsetX, y: maxOffsetY };
+    rotationRef.current = element.rotation;
+    stage.container().style.cursor = 'grabbing';
   };
 
   const tooltip = language === 'he' ? 'גרור להזיז את התמונה בתוך המסגרת' : 'Drag to pan photo within frame';
@@ -800,22 +852,21 @@ function PhotoPanHandle({
       />
       {/* Invisible larger hit area for easier interaction */}
       <Circle
-        radius={iconSize / 2 + 8}
+        radius={iconSize / 2 + 10}
         fill="transparent"
-        draggable
-        onDragStart={handleDragStart}
-        onDragMove={handleDragMove}
-        onDragEnd={handleDragEnd}
-        onTouchStart={handleDragStart}
-        onTouchMove={handleDragMove}
-        onTouchEnd={handleDragEnd}
+        onMouseDown={handleMouseDown}
+        onTouchStart={handleMouseDown}
         onMouseEnter={(e) => {
-          const stage = e.target.getStage();
-          if (stage) stage.container().style.cursor = 'move';
+          if (!isPanning) {
+            const stage = e.target.getStage();
+            if (stage) stage.container().style.cursor = 'move';
+          }
         }}
         onMouseLeave={(e) => {
-          const stage = e.target.getStage();
-          if (stage) stage.container().style.cursor = 'default';
+          if (!isPanning) {
+            const stage = e.target.getStage();
+            if (stage) stage.container().style.cursor = 'default';
+          }
         }}
         title={tooltip}
       />
@@ -843,8 +894,9 @@ function FrameElementComponent({
   canvasWidth,
   canvasHeight,
   gridEnabled,
-  onSnapGuidesChange
-}: {element: FrameElement;image: HTMLImageElement | null;isSelected: boolean;isDropTarget: boolean;editMode: EditMode;onSelect: () => void;onDoubleClick: () => void;onChange: (attrs: Partial<FrameElement>) => void;onPhotoChange: (attrs: Partial<FrameElement>) => void;language: 'he' | 'en';snappingEnabled: boolean;otherElements: CanvasElement[];canvasWidth: number;canvasHeight: number;gridEnabled: boolean;onSnapGuidesChange: (guides: SnapGuide[]) => void;}) {
+  onSnapGuidesChange,
+  stageRef
+}: {element: FrameElement;image: HTMLImageElement | null;isSelected: boolean;isDropTarget: boolean;editMode: EditMode;onSelect: () => void;onDoubleClick: () => void;onChange: (attrs: Partial<FrameElement>) => void;onPhotoChange: (attrs: Partial<FrameElement>) => void;language: 'he' | 'en';snappingEnabled: boolean;otherElements: CanvasElement[];canvasWidth: number;canvasHeight: number;gridEnabled: boolean;onSnapGuidesChange: (guides: SnapGuide[]) => void;stageRef?: React.RefObject<Konva.Stage>;}) {
   const groupRef = useRef<Konva.Group>(null);
   const trRef = useRef<Konva.Transformer>(null);
   const shadowGroupRef = useRef<Konva.Group>(null);
@@ -876,25 +928,35 @@ function FrameElementComponent({
     const imgW = image.naturalWidth || image.width;
     const imgH = image.naturalHeight || image.height;
 
-    if (!imgW || !imgH) return null;
+    if (!imgW || !imgH || imgW <= 0 || imgH <= 0) return null;
+    if (!element.width || !element.height || element.width <= 0 || element.height <= 0) return null;
 
     // Calculate scale to COVER the frame (image fills frame completely)
     const scaleW = element.width / imgW;
     const scaleH = element.height / imgH;
+    
+    // Fit mode: show entire image within frame (may have letterboxing)
+    // Fill mode: fill entire frame with image (may crop)
     const baseScale = element.fitMode === 'fit' ?
-    Math.min(scaleW, scaleH) :
-    Math.max(scaleW, scaleH);
+      Math.min(scaleW, scaleH) :
+      Math.max(scaleW, scaleH);
 
-    // Apply user zoom
-    const finalScale = baseScale * element.photoScale;
+    // Apply user zoom (photoScale defaults to 1)
+    const photoScale = element.photoScale || 1;
+    const finalScale = baseScale * photoScale;
+
+    // Ensure valid scale
+    if (!isFinite(finalScale) || finalScale <= 0) return null;
 
     // Final display dimensions
     const displayW = imgW * finalScale;
     const displayH = imgH * finalScale;
 
     // Position to center the image in the frame, plus user offset
-    const x = (element.width - displayW) / 2 + element.photoOffsetX;
-    const y = (element.height - displayH) / 2 + element.photoOffsetY;
+    const offsetX = element.photoOffsetX || 0;
+    const offsetY = element.photoOffsetY || 0;
+    const x = (element.width - displayW) / 2 + offsetX;
+    const y = (element.height - displayH) / 2 + offsetY;
 
     return { x, y, width: displayW, height: displayH };
   };
@@ -946,16 +1008,40 @@ function FrameElementComponent({
   const handleTransformEnd = () => {
     const node = groupRef.current;
     if (!node) return;
+    
+    // Read current transform state
     const scaleX = node.scaleX();
     const scaleY = node.scaleY();
+    const nodeX = node.x();
+    const nodeY = node.y();
+    const rotation = node.rotation();
+    
+    // Calculate new dimensions
+    const newWidth = Math.max(50, element.width * Math.abs(scaleX / frameScaleX));
+    const newHeight = Math.max(50, element.height * Math.abs(scaleY / frameScaleY));
+    
+    // Calculate position adjustment for offset change when frame is flipped
+    // When flipped, the offset changes with width, which affects visual position
+    const oldOffsetX = element.flipH ? element.width : 0;
+    const oldOffsetY = element.flipV ? element.height : 0;
+    const newOffsetX = element.flipH ? newWidth : 0;
+    const newOffsetY = element.flipV ? newHeight : 0;
+    
+    // Adjust position to maintain visual center
+    // Visual position = node.x - offset * scaleX (for the flip component)
+    const newX = nodeX + (oldOffsetX - newOffsetX) * frameScaleX;
+    const newY = nodeY + (oldOffsetY - newOffsetY) * frameScaleY;
+    
+    // Reset node scale before React re-renders
     node.scaleX(frameScaleX);
     node.scaleY(frameScaleY);
+    
     onChange({
-      x: node.x(),
-      y: node.y(),
-      width: Math.max(50, element.width * Math.abs(scaleX)),
-      height: Math.max(50, element.height * Math.abs(scaleY)),
-      rotation: node.rotation()
+      x: newX,
+      y: newY,
+      width: newWidth,
+      height: newHeight,
+      rotation
     });
   };
 
@@ -1238,21 +1324,23 @@ function FrameElementComponent({
       }
 
       {/* Custom rotation handle - circular with stem, above frame */}
-      {isSelected && !element.locked && editMode === 'frame' && (
+      {isSelected && !element.locked && editMode === 'frame' && stageRef && (
         <RotationHandle
           element={element}
           onChange={onChange}
           language={language}
+          stageRef={stageRef}
         />
       )}
 
       {/* Photo pan handle - centered four-way move icon */}
-      {isSelected && hasPhoto && editMode === 'photo' && (
+      {isSelected && hasPhoto && editMode === 'photo' && stageRef && (
         <PhotoPanHandle
           element={element}
           imageProps={imageProps}
           onPhotoChange={onPhotoChange}
           language={language}
+          stageRef={stageRef}
         />
       )}
     </>);
@@ -2533,7 +2621,7 @@ export default function ClientEditor() {
                     {elements.filter((el) => el.type !== 'group').sort((a, b) => a.zIndex - b.zIndex).map((element) => {
                     if (element.type === 'frame') {
                       const frame = element as FrameElement;
-                      return <FrameElementComponent key={frame.id} element={frame} image={loadedImages.get(frame.photoSrc || '') || null} isSelected={selectedElementId === frame.id} isDropTarget={hoverFrameId === frame.id} editMode={selectedElementId === frame.id ? editMode : 'frame'} onSelect={() => {setSelectedElementId(frame.id);setEditMode('frame');setIsEditingText(false);}} onDoubleClick={() => {setSelectedElementId(frame.id);setEditMode('photo');}} onChange={(attrs) => updateElement(frame.id, attrs)} onPhotoChange={(attrs) => updateElement(frame.id, attrs)} language={language} snappingEnabled={snappingEnabled} otherElements={elements} canvasWidth={CANVAS_WIDTH} canvasHeight={CANVAS_HEIGHT} gridEnabled={gridEnabled} onSnapGuidesChange={setSnapGuides} />;
+                      return <FrameElementComponent key={frame.id} element={frame} image={loadedImages.get(frame.photoSrc || '') || null} isSelected={selectedElementId === frame.id} isDropTarget={hoverFrameId === frame.id} editMode={selectedElementId === frame.id ? editMode : 'frame'} onSelect={() => {setSelectedElementId(frame.id);setEditMode('frame');setIsEditingText(false);}} onDoubleClick={() => {setSelectedElementId(frame.id);setEditMode('photo');}} onChange={(attrs) => updateElement(frame.id, attrs)} onPhotoChange={(attrs) => updateElement(frame.id, attrs)} language={language} snappingEnabled={snappingEnabled} otherElements={elements} canvasWidth={CANVAS_WIDTH} canvasHeight={CANVAS_HEIGHT} gridEnabled={gridEnabled} onSnapGuidesChange={setSnapGuides} stageRef={stageRef} />;
                     }
                     if (element.type === 'text') {
                       const text = element as TextElement;
