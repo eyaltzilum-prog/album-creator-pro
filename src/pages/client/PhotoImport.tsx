@@ -218,10 +218,8 @@ export default function PhotoImport() {
         spreadsToInsert.push({
           project_id: project.id,
           spread_index: i,
-          is_cover: isCover,
-          page_number: pageNumber,
-          background_color: background,
-          elements: []
+          spread_type: isCover ? 'cover' : 'interior',
+          canvas_data: { objects: [], background, pageNumber }
         });
       }
 
@@ -248,13 +246,14 @@ export default function PhotoImport() {
 
           uploadedPhotos.push({
             project_id: project.id,
-            client_id: user.id,
-            storage_path: fileName,
-            public_url: urlData.publicUrl,
-            original_filename: photo.file.name,
+            uploaded_by: user.id,
+            file_url: urlData.publicUrl,
+            thumbnail_url: urlData.publicUrl,
+            original_name: photo.file.name,
             width: photo.width || 0,
             height: photo.height || 0,
-            file_size: photo.file.size
+            file_size: photo.file.size,
+            metadata: { storage_path: fileName }
           });
         }
       }
