@@ -181,7 +181,7 @@ export default function PhotoImport() {
         client_id: user.id,
         created_by: user.id,
         name: setupState.albumName || `${theme.name[language]} Album`,
-        album_type: theme.category,
+        album_type: ['wedding', 'baby', 'travel', 'family', 'holiday'].includes(theme.category) ? theme.category : 'custom',
         page_count: setupState.pageCount,
         status: 'draft',
         settings: {
@@ -278,7 +278,7 @@ export default function PhotoImport() {
       });
     } catch (err: unknown) {
       console.error('Error creating album:', err);
-      const errorMessage = err instanceof Error ? err.message : '';
+      const errorMessage = err && typeof err === 'object' && 'message' in err ? String((err as { message: unknown }).message || '') : '';
       setError(errorMessage || (language === 'he' ? 'שגיאה ביצירת האלבום' : 'Error creating album'));
     } finally {
       setIsCreating(false);

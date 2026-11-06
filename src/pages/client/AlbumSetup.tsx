@@ -170,7 +170,7 @@ export default function AlbumSetup() {
         client_id: user.id,
         created_by: user.id,
         name: `${setupData.theme.name[language]} Album`,
-        album_type: setupData.theme.category,
+        album_type: ['wedding', 'baby', 'travel', 'family', 'holiday'].includes(setupData.theme.category) ? setupData.theme.category : 'custom',
         page_count: setupData.pageCount,
         status: 'draft',
         settings: {
